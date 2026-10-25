@@ -147,6 +147,51 @@ body, body *:not(.bi) { font-family: 'DM Sans', Arial, sans-serif !important; }
 .upload-remove { justify-self: start; }
 .slug-suggest { margin-top: 7px; }
 .slug-warning { margin-top: 9px; line-height: 1.5; }
+
+/* Keep the marketing site distinct from the per-card and admin color themes. */
+.site-shell {
+  --yellow: #72ad47;
+  --yellow-soft: #edf5e7;
+}
+.site-shell .brand img,
+.site-shell .cta-mark { filter: hue-rotate(53deg); }
+.site-shell .button-yellow {
+  color: #17210f;
+  box-shadow: 0 7px 19px rgba(91, 145, 54, .2);
+}
+.site-shell .button-yellow:hover {
+  background: #639b3b;
+  box-shadow: 0 9px 22px rgba(91, 145, 54, .28);
+}
+.site-shell .nav-links a:hover,
+.site-shell .footer-links a:hover,
+.site-shell .button-plain .app-icon { color: #4d7d34; }
+.site-shell .eyebrow,
+.site-shell .section-kicker { color: #527c37; }
+.site-shell .eyebrow-dot { box-shadow: 0 0 0 4px #72ad4725; }
+.site-shell .hero-copy h1 span,
+.site-shell .trust-strip strong span { color: #5d9639; }
+.site-shell .hero-visual::before {
+  background: radial-gradient(circle, #edf5e7 0, #f7faf3 45%, #fff 72%);
+}
+.site-shell .hero-orbit { border-color: #dce9d3; }
+.site-shell .orbit-two { border-color: #e8efe2; }
+.site-shell .cover-shape { border-color: #8dbd6980; }
+.site-shell .preview-brand { color: #91c46d; }
+.site-shell .preview-role span { color: #6c9c4d; }
+.site-shell .feature-card:hover { background: #f8fbf5; }
+.site-shell .feature-icon { background: #edf5e7; color: #527c37; }
+.site-shell .step-number,
+.site-shell .step-arrow,
+.site-shell .nfc-mark,
+.site-shell .mini-qr,
+.site-shell .hero-spark { color: #5d8d3d; }
+.site-shell .cta-card .section-kicker { color: #a5d184; }
+.site-shell .cta-glow {
+  border-color: #83b95d3a;
+  box-shadow: 0 0 0 30px #83b95d0b, 0 0 0 65px #83b95d08;
+}
+
 .public-profile-photo { width: 124px; height: 124px; margin-top: -62px; margin-bottom: 17px; border-width: 6px; font-size: 35px; box-shadow: 0 5px 16px #1717171a; }
 .public-actions { grid-template-columns: minmax(0, 1fr); gap: 9px; margin: 25px 0 13px; text-align: left; }
 .public-actions-title { margin: 0; color: inherit; font-size: 18px; font-weight: 750; letter-spacing: -.35px; }
