@@ -123,6 +123,10 @@ function Icon({ name, size = 20 }) {
     stars: 'stars',
     calendar: 'calendar3',
     link: 'link-45deg',
+    facebook: 'facebook',
+    tiktok: 'tiktok',
+    youtube: 'youtube',
+    github: 'github',
   }
   return <i className={`bi bi-${icons[name] || icons.grid} app-icon`} style={{ fontSize: size }} aria-hidden="true" />
 }
@@ -677,6 +681,19 @@ function safeWebUrl(value) {
   } catch { return null }
 }
 
+function socialBrand(platform) {
+  const brands = {
+    facebook: { icon: 'facebook', color: '#1877f2' },
+    instagram: { icon: 'instagram', color: '#c13584' },
+    linkedin: { icon: 'linkedin', color: '#0a66c2' },
+    tiktok: { icon: 'tiktok', color: '#111111' },
+    youtube: { icon: 'youtube', color: '#ff0000' },
+    x: { icon: 'twitter', color: '#111111' },
+    github: { icon: 'github', color: '#24292f' },
+  }
+  return brands[String(platform || '').toLowerCase()] || { icon: 'link', color: '#555555' }
+}
+
 function PublicCardPage() {
   const { slug } = useParams()
   const [card, setCard] = useState(null)
@@ -752,7 +769,10 @@ function PublicCardPage() {
           <button className="public-action" onClick={share}><span className="public-action-icon"><Icon name="share" size={18} /></span><span className="public-action-copy"><strong>Share profile</strong><small>Send this profile to someone</small></span><Icon name="arrow" size={16} /></button>
           {sections.booking && booking && <a className="public-action" href={booking} target="_blank" rel="noopener noreferrer"><span className="public-action-icon"><Icon name="calendar" size={18} /></span><span className="public-action-copy"><strong>Book an appointment</strong><small>Choose a time to connect</small></span><Icon name="arrow" size={16} /></a>}
         </div>
-        {sections.social && socials.length > 0 && <div className="public-social-list">{socials.map((social, index) => <a key={`${social.platform}-${index}`} href={safeWebUrl(social.url)} target="_blank" rel="noopener noreferrer">{social.label || social.platform}<Icon name="external" size={14} /></a>)}</div>}
+        {sections.social && socials.length > 0 && <section className="public-social-list" aria-label="Social media and links"><h2 className="public-actions-title">Social media &amp; links</h2><p className="public-actions-hint">Connect with {card.company || card.full_name} online.</p>{socials.map((social, index) => {
+          const brand = socialBrand(social.platform)
+          return <a key={`${social.platform}-${index}`} className="public-action public-social-action" style={{ '--social-color': brand.color }} href={safeWebUrl(social.url)} target="_blank" rel="noopener noreferrer"><span className="public-action-icon public-social-icon"><Icon name={brand.icon} size={19} /></span><span className="public-action-copy"><strong>{social.label || social.platform}</strong><small>Open {social.platform} profile</small></span><Icon name="arrow" size={16} /></a>
+        })}</section>}
         {sections.location && (card.address || mapUrl) && <div className="public-detail"><Icon name="location" size={16} /><span>{card.address || 'Business location'}</span>{mapUrl && <a href={mapUrl} target="_blank" rel="noopener noreferrer">Get directions <Icon name="external" size={13} /></a>}</div>}
       </div>
     </article></div><Toast message={notice} onClose={() => setNotice('')} />

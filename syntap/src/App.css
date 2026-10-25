@@ -222,6 +222,35 @@ body, body *:not(.bi) { font-family: 'DM Sans', Arial, sans-serif !important; }
 .public-card-page .public-action-icon { color: #201c0c; }
 .public-detail > .bi { flex: 0 0 auto; color: var(--card-accent); }
 .public-detail a { display: inline-flex; align-items: center; gap: 5px; color: var(--card-accent); }
+.public-social-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-content: stretch;
+  gap: 9px;
+  border-top: 1px solid #eeede8;
+  padding-top: 20px;
+  margin-top: 20px;
+  text-align: left;
+}
+.public-social-list .public-actions-title,
+.public-social-list .public-actions-hint { grid-column: 1 / -1; }
+.public-card-page .public-social-action,
+.public-card-page .public-social-action:hover {
+  background: color-mix(in srgb, var(--social-color) 8%, var(--card-bg));
+  border-color: color-mix(in srgb, var(--social-color) 24%, #e8e7e1);
+}
+.public-card-page .public-social-action:hover {
+  background: color-mix(in srgb, var(--social-color) 14%, var(--card-bg));
+  border-color: color-mix(in srgb, var(--social-color) 45%, #e8e7e1);
+}
+.public-card-page .public-social-icon { background: var(--social-color); color: #fff; }
+.public-card-page .public-social-action > .app-icon { color: var(--social-color); }
+.public-card-page.public-dark .public-social-action,
+.public-card-page.public-dark .public-social-action:hover {
+  background: color-mix(in srgb, var(--social-color) 17%, #33342f);
+  border-color: color-mix(in srgb, var(--social-color) 35%, #484840);
+}
+.public-card-page.public-dark .public-social-icon { color: #fff; }
 .toast { position: fixed; right: 22px; bottom: 22px; z-index: 60; background: #242521; color: white; border-radius: 7px; padding: 12px 14px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 15px; font-size: 11px; }.toast button { border: 0; color: #ccc; display: grid; place-items: center; background: transparent; padding: 0; cursor: pointer; }.toast-error { background: #902d2d; }
 .analytics-chart-panel { margin-top: 15px; }.daily-chart { height: 200px; padding: 10px 18px 15px; display: flex; align-items: stretch; gap: 7px; overflow-x: auto; border-top: 1px solid #f0efeb; }.chart-column { min-width: 0; flex: 1; display: grid; grid-template-rows: 17px 1fr 17px; gap: 4px; text-align: center; }.chart-column > span { color: #8a6e10; font-size: 8px; }.chart-track { display: flex; align-items: end; justify-content: center; background: #faf9f5; border-radius: 4px 4px 0 0; }.chart-track i { width: min(26px, 58%); min-height: 2px; border-radius: 4px 4px 0 0; background: linear-gradient(0deg, #e8ad00, #ffd84d); }.chart-column small { color: #95938b; font-size: 7px; white-space: nowrap; }
 
