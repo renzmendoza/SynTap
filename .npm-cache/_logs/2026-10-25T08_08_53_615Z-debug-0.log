@@ -1,0 +1,151 @@
+0 verbose cli E:\nodejs\node.exe E:\nodejs\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.18.0
+2 info using node@v26.6.0
+3 silly config load:file:E:\nodejs\node_modules\npm\npmrc
+4 silly config load:file:E:\Syntap\syntap\.npmrc
+5 silly config load:file:C:\Users\my pc\.npmrc
+6 silly config load:file:C:\Users\my pc\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm install bootstrap-icons
+8 verbose argv "install" "bootstrap-icons" "--cache" "E:\\Syntap\\.npm-cache"
+9 verbose logfile logs-max:10 dir:E:\Syntap\.npm-cache\_logs\2026-10-25T08_08_53_615Z-
+10 verbose logfile E:\Syntap\.npm-cache\_logs\2026-10-25T08_08_53_615Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:2248146944 maxSize:562036736 maxEntrySize:281018368
+13 verbose shrinkwrap failed to load node_modules/.package-lock.json out of date, updated: node_modules
+14 silly idealTree buildDeps
+15 silly fetch manifest bootstrap-icons@*
+16 silly packumentCache full:https://registry.npmjs.org/bootstrap-icons cache-miss
+17 http fetch GET 200 https://registry.npmjs.org/npm 146ms
+18 http fetch GET 200 https://registry.npmjs.org/bootstrap-icons 123ms (cache miss)
+19 silly packumentCache full:https://registry.npmjs.org/bootstrap-icons set size:undefined disposed:false
+20 silly placeDep ROOT bootstrap-icons@1.13.2 OK for: syntap@0.0.0 want: *
+21 silly reify moves {}
+22 silly audit bulk request {
+22 silly audit   '@oxc-project/types': [ '0.155.0' ],
+22 silly audit   '@oxlint/binding-android-arm-eabi': [ '1.89.0' ],
+22 silly audit   '@oxlint/binding-android-arm64': [ '1.89.0' ],
+22 silly audit   '@oxlint/binding-darwin-arm64': [ '1.89.0' ],
+22 silly audit   '@oxlint/binding-darwin-x64': [ '1.89.0' ],
+22 silly audit   '@oxlint/binding-freebsd-x64': [ '1.89.0' ],
+22 silly audit   '@oxlint/binding-linux-arm-gnueabihf': [ '1.89.0' ],
+22 silly audit   '@oxlint/binding-linux-arm-musleabihf': [ '1.89.0' ],
+22 silly audit   '@oxlint/binding-linux-arm64-gnu': [ '1.89.0' ],
+22 silly audit   '@oxlint/binding-linux-arm64-musl': [ '1.89.0' ],
+22 silly audit   '@oxlint/binding-linux-ppc64-gnu': [ '1.89.0' ],
+22 silly audit   '@oxlint/binding-linux-riscv64-gnu': [ '1.89.0' ],
+22 silly audit   '@oxlint/binding-linux-riscv64-musl': [ '1.89.0' ],
+22 silly audit   '@oxlint/binding-linux-s390x-gnu': [ '1.89.0' ],
+22 silly audit   '@oxlint/binding-linux-x64-gnu': [ '1.89.0' ],
+22 silly audit   '@oxlint/binding-linux-x64-musl': [ '1.89.0' ],
+22 silly audit   '@oxlint/binding-openharmony-arm64': [ '1.89.0' ],
+22 silly audit   '@oxlint/binding-win32-arm64-msvc': [ '1.89.0' ],
+22 silly audit   '@oxlint/binding-win32-ia32-msvc': [ '1.89.0' ],
+22 silly audit   '@oxlint/binding-win32-x64-msvc': [ '1.89.0' ],
+22 silly audit   '@rolldown/binding-android-arm-eabi': [ '1.2.15' ],
+22 silly audit   '@rolldown/binding-android-arm64': [ '1.2.15' ],
+22 silly audit   '@rolldown/binding-darwin-arm64': [ '1.2.15' ],
+22 silly audit   '@rolldown/binding-darwin-x64': [ '1.2.15' ],
+22 silly audit   '@rolldown/binding-freebsd-x64': [ '1.2.15' ],
+22 silly audit   '@rolldown/binding-linux-arm-gnueabihf': [ '1.2.15' ],
+22 silly audit   '@rolldown/binding-linux-arm64-gnu': [ '1.2.15' ],
+22 silly audit   '@rolldown/binding-linux-arm64-musl': [ '1.2.15' ],
+22 silly audit   '@rolldown/binding-linux-ppc64-gnu': [ '1.2.15' ],
+22 silly audit   '@rolldown/binding-linux-s390x-gnu': [ '1.2.15' ],
+22 silly audit   '@rolldown/binding-linux-x64-gnu': [ '1.2.15' ],
+22 silly audit   '@rolldown/binding-linux-x64-musl': [ '1.2.15' ],
+22 silly audit   '@rolldown/binding-openharmony-arm64': [ '1.2.15' ],
+22 silly audit   '@rolldown/binding-win32-arm64-msvc': [ '1.2.15' ],
+22 silly audit   '@rolldown/binding-win32-x64-msvc': [ '1.2.15' ],
+22 silly audit   '@rolldown/pluginutils': [ '1.0.1' ],
+22 silly audit   '@supabase/auth-js': [ '2.118.0' ],
+22 silly audit   '@supabase/functions-js': [ '2.118.0' ],
+22 silly audit   '@supabase/phoenix': [ '0.4.5' ],
+22 silly audit   '@supabase/postgrest-js': [ '2.118.0' ],
+22 silly audit   '@supabase/realtime-js': [ '2.118.0' ],
+22 silly audit   '@supabase/storage-js': [ '2.118.0' ],
+22 silly audit   '@supabase/supabase-js': [ '2.118.0' ],
+22 silly audit   '@types/react': [ '19.3.0' ],
+22 silly audit   '@types/react-dom': [ '19.3.0' ],
+22 silly audit   '@vitejs/plugin-react': [ '6.1.2' ],
+22 silly audit   'ansi-regex': [ '5.0.1' ],
+22 silly audit   'ansi-styles': [ '4.3.0' ],
+22 silly audit   camelcase: [ '5.3.1' ],
+22 silly audit   cliui: [ '6.0.0' ],
+22 silly audit   'color-convert': [ '2.0.1' ],
+22 silly audit   'color-name': [ '1.1.4' ],
+22 silly audit   cookie: [ '1.1.1' ],
+22 silly audit   csstype: [ '3.2.3' ],
+22 silly audit   decamelize: [ '1.2.0' ],
+22 silly audit   'detect-libc': [ '2.1.2' ],
+22 silly audit   dijkstrajs: [ '1.0.3' ],
+22 silly audit   'emoji-regex': [ '8.0.0' ],
+22 silly audit   fdir: [ '6.5.0' ],
+22 silly audit   'find-up': [ '4.1.0' ],
+22 silly audit   fsevents: [ '2.3.3' ],
+22 silly audit   'get-caller-file': [ '2.0.5' ],
+22 silly audit   'iceberg-js': [ '0.8.1' ],
+22 silly audit   'is-fullwidth-code-point': [ '3.0.0' ],
+22 silly audit   lightningcss: [ '1.33.0' ],
+22 silly audit   'lightningcss-android-arm64': [ '1.33.0' ],
+22 silly audit   'lightningcss-darwin-arm64': [ '1.33.0' ],
+22 silly audit   'lightningcss-darwin-x64': [ '1.33.0' ],
+22 silly audit   'lightningcss-freebsd-x64': [ '1.33.0' ],
+22 silly audit   'lightningcss-linux-arm-gnueabihf': [ '1.33.0' ],
+22 silly audit   'lightningcss-linux-arm64-gnu': [ '1.33.0' ],
+22 silly audit   'lightningcss-linux-arm64-musl': [ '1.33.0' ],
+22 silly audit   'lightningcss-linux-x64-gnu': [ '1.33.0' ],
+22 silly audit   'lightningcss-linux-x64-musl': [ '1.33.0' ],
+22 silly audit   'lightningcss-win32-arm64-msvc': [ '1.33.0' ],
+22 silly audit   'lightningcss-win32-x64-msvc': [ '1.33.0' ],
+22 silly audit   'locate-path': [ '5.0.0' ],
+22 silly audit   nanoid: [ '3.3.20' ],
+22 silly audit   oxlint: [ '1.89.0' ],
+22 silly audit   'p-limit': [ '2.3.0' ],
+22 silly audit   'p-locate': [ '4.1.0' ],
+22 silly audit   'p-try': [ '2.2.0' ],
+22 silly audit   'path-exists': [ '4.0.0' ],
+22 silly audit   picocolors: [ '1.1.1' ],
+22 silly audit   picomatch: [ '4.0.7' ],
+22 silly audit   pngjs: [ '5.0.0' ],
+22 silly audit   postcss: [ '8.5.31' ],
+22 silly audit   qrcode: [ '1.5.4' ],
+22 silly audit   react: [ '19.3.1' ],
+22 silly audit   'react-dom': [ '19.3.1' ],
+22 silly audit   'react-router': [ '7.18.4' ],
+22 silly audit   'react-router-dom': [ '7.18.4' ],
+22 silly audit   'require-directory': [ '2.1.1' ],
+22 silly audit   'require-main-filename': [ '2.0.0' ],
+22 silly audit   rolldown: [ '1.2.15' ],
+22 silly audit   scheduler: [ '0.28.0' ],
+22 silly audit   'set-blocking': [ '2.0.0' ],
+22 silly audit   'set-cookie-parser': [ '2.7.3' ],
+22 silly audit   'source-map-js': [ '1.2.2' ],
+22 silly audit   'string-width': [ '4.2.3' ],
+22 silly audit   'strip-ansi': [ '6.0.1' ],
+22 silly audit   tinyglobby: [ '0.2.17' ],
+22 silly audit   tslib: [ '2.8.1' ],
+22 silly audit   vite: [ '8.3.5' ],
+22 silly audit   'which-module': [ '2.0.1' ],
+22 silly audit   'wrap-ansi': [ '6.2.0' ],
+22 silly audit   y18n: [ '4.0.3' ],
+22 silly audit   yargs: [ '15.4.1' ],
+22 silly audit   'yargs-parser': [ '18.1.3' ],
+22 silly audit   'bootstrap-icons': [ '1.13.2' ]
+22 silly audit }
+23 http cache bootstrap-icons@https://registry.npmjs.org/bootstrap-icons/-/bootstrap-icons-1.13.2.tgz 0ms (cache hit)
+24 silly tarball no local data for bootstrap-icons@https://registry.npmjs.org/bootstrap-icons/-/bootstrap-icons-1.13.2.tgz. Extracting by manifest.
+25 http fetch POST 200 https://registry.npmjs.org/-/npm/v1/security/advisories/bulk 193ms
+26 silly audit report {}
+27 http fetch GET 200 https://registry.npmjs.org/bootstrap-icons/-/bootstrap-icons-1.13.2.tgz 4719ms (cache miss)
+28 silly ADD node_modules/bootstrap-icons
+29 verbose cwd E:\Syntap\syntap
+30 verbose os Windows_NT 10.0.19045
+31 verbose node v26.6.0
+32 verbose npm  v11.18.0
+33 notice
+33 notice New major version of npm available! 11.18.0 -> 12.2.1
+33 notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+33 notice To update run: npm install -g npm@12.2.1
+33 notice  { force: true, Symbol(proc-log.meta): true }
+34 verbose exit 0
+35 info ok
