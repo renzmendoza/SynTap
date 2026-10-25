@@ -145,6 +145,8 @@ body, body *:not(.bi) { font-family: 'DM Sans', Arial, sans-serif !important; }
 .app-icon::before { display: block; line-height: 1; vertical-align: 0; }
 .upload-box input { display: none; }
 .upload-remove { justify-self: start; }
+.slug-suggest { margin-top: 7px; }
+.slug-warning { margin-top: 9px; line-height: 1.5; }
 .public-profile-photo { width: 124px; height: 124px; margin-top: -62px; margin-bottom: 17px; border-width: 6px; font-size: 35px; box-shadow: 0 5px 16px #1717171a; }
 .public-actions { grid-template-columns: minmax(0, 1fr); gap: 9px; margin: 25px 0 13px; text-align: left; }
 .public-actions-title { margin: 0; color: inherit; font-size: 18px; font-weight: 750; letter-spacing: -.35px; }

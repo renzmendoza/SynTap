@@ -122,6 +122,7 @@ function Icon({ name, size = 20 }) {
     twitter: 'twitter-x',
     stars: 'stars',
     calendar: 'calendar3',
+    link: 'link-45deg',
   }
   return <i className={`bi bi-${icons[name] || icons.grid} app-icon`} style={{ fontSize: size }} aria-hidden="true" />
 }
@@ -476,6 +477,11 @@ function fieldSlug(value) {
   return value.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
+function shortProfileSlug(value) {
+  const words = value.trim().split(/\s+/).filter(Boolean)
+  return fieldSlug(words.length > 1 ? `${words[0]} ${words[words.length - 1]}` : value)
+}
+
 function CardEditorPage({ editing = false }) {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -503,9 +509,19 @@ function CardEditorPage({ editing = false }) {
   function update(key, value) {
     setCard((current) => {
       const next = { ...current, [key]: value }
-      if (key === 'full_name' && !slugTouched) next.slug = fieldSlug(value)
+      if (key === 'full_name' && !slugTouched) next.slug = shortProfileSlug(value)
       return next
     })
+  }
+  function useShortSlug() {
+    const slug = shortProfileSlug(card.full_name)
+    if (!slug) {
+      setError('Add a full name before creating a short profile link.')
+      return
+    }
+    setError('')
+    setSlugTouched(true)
+    update('slug', slug)
   }
   function updateTheme(key, value) {
     setCard((current) => {
@@ -614,7 +630,7 @@ function CardEditorPage({ editing = false }) {
           {card.social_links.length === 0 ? <p className="form-hint">No social links added yet.</p> : card.social_links.map((social, index) => <div className="social-row" key={`${index}-${social.platform}`}><select value={social.platform} onChange={(event) => updateSocial(index, 'platform', event.target.value)} aria-label="Social platform">{SOCIAL_PLATFORMS.map((platform) => <option key={platform}>{platform}</option>)}</select><input type="url" value={social.url} onChange={(event) => updateSocial(index, 'url', event.target.value)} placeholder="https://…" aria-label="Social profile URL" /><input value={social.label || ''} onChange={(event) => updateSocial(index, 'label', event.target.value)} placeholder="Display label (optional)" aria-label="Social display label" /><button type="button" className="remove-link" aria-label="Remove social link" onClick={() => setCard((current) => ({ ...current, social_links: current.social_links.filter((_, i) => i !== index) }))}><Icon name="close" size={14} /></button></div>)}
         </section>
         <section className="panel editor-panel"><div className="editor-section-heading"><span className="editor-section-icon">04</span><div><h2>Public URL</h2><p>This short link is used by the profile, QR code, and NFC card.</p></div></div>
-          <label>Profile URL slug<div className="slug-input"><span>/card/</span><input value={card.slug} onChange={(event) => { setSlugTouched(true); update('slug', fieldSlug(event.target.value)) }} placeholder="alex-santos" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required /></div></label><div className="public-url-preview"><span>PUBLIC URL PREVIEW</span><strong>{publicUrl}</strong></div>
+          <label>Profile URL slug<div className="slug-input"><span>/card/</span><input value={card.slug} onChange={(event) => { setSlugTouched(true); update('slug', fieldSlug(event.target.value)) }} placeholder="alex-santos" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required /></div></label><button type="button" className="button button-outline button-small slug-suggest" onClick={useShortSlug}><Icon name="link" size={15} /> Use short link</button><div className="public-url-preview"><span>PUBLIC URL PREVIEW</span><strong>{publicUrl}</strong></div><p className="form-hint slug-warning">Changing a published profile’s slug changes its URL. Previously shared links and printed QR codes using the old URL will no longer open this profile.</p>
         </section>
       </div>
       <aside className="editor-side">
