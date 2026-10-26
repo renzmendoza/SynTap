@@ -38,7 +38,7 @@ create table if not exists public.digital_cards (
   address text not null default '',
   map_url text not null default '',
   booking_url text not null default '',
-  theme_settings jsonb not null default '{"theme":"light","primary":"#ffc400","background":"#ffffff","button_style":"rounded","alignment":"center"}'::jsonb,
+  theme_settings jsonb not null default '{"theme":"light","primary":"#111827","button_appearance":"soft","button_shape":"rounded","alignment":"center"}'::jsonb,
   section_settings jsonb not null default '{"about":true,"contact":true,"social":true,"location":true,"booking":true}'::jsonb,
   social_links jsonb not null default '[]'::jsonb check (jsonb_typeof(social_links) = 'array'),
   status text not null default 'draft' check (status in ('draft', 'published')),

@@ -2,6 +2,8 @@
 
 SynTap is a React/Vite digital business card platform backed by Supabase. It includes a public marketing site, administrator sign-in, protected profile management, published profile pages, QR code downloads, NFC URL guidance, and first-party profile view analytics.
 
+Card editors support Classic, Dark, Liquid Glass, Premium, and Minimal themes, plus per-card button appearance, shape, size, colors, and layout settings. Public cover photos are optional and appear only after their image loads successfully. Unfinished editor changes are automatically kept in session storage for the current browser session; uploaded images are already stored in the private card-media bucket, while browser storage does not retain administrator credentials.
+
 ## Run locally
 
 1. Create a Supabase project.
