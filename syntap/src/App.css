@@ -874,22 +874,10 @@ body, body *:not(.bi) { font-family: 'DM Sans', Arial, sans-serif !important; }
 .public-card-wrap-large { width: min(100%, 440px); }
 .public-profile-large {
   position: relative;
-  border: 7px solid #202630;
-  border-radius: 38px;
-  background: #f8fafc;
-  box-shadow: 0 24px 70px rgba(15,23,42,.2), inset 0 0 0 1px rgba(255,255,255,.7);
-}
-.public-profile-large::before {
-  position: absolute;
-  z-index: 4;
-  top: 10px;
-  left: 50%;
-  width: 48px;
-  height: 5px;
-  border-radius: 99px;
-  background: #202630;
-  content: '';
-  transform: translateX(-50%);
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 14px 50px rgba(23,23,23,.05);
 }
 .public-profile-large > .public-cover { height: 118px; }
 .public-profile-large .public-cover::after { opacity: .14; }
@@ -910,7 +898,7 @@ body, body *:not(.bi) { font-family: 'DM Sans', Arial, sans-serif !important; }
   margin: 0 auto;
   overflow: hidden;
   border: 0;
-  border-radius: 0;
+  border-radius: 20px;
   background: linear-gradient(145deg, #aeb9ca, #4f6382);
   color: #fff;
   font-size: 72px;
@@ -919,10 +907,18 @@ body, body *:not(.bi) { font-family: 'DM Sans', Arial, sans-serif !important; }
 .public-profile-large.has-cover .public-profile-photo {
   height: 326px;
   margin: 0 auto;
-  border-radius: 0;
+  border-radius: 20px;
 }
 .public-profile-large.align-left.no-cover .public-profile-photo { margin: 0 auto; }
 .public-profile-large.align-left.has-cover .public-profile-photo { margin: 0 auto; }
+.public-profile-large .public-profile-photo::after {
+  position: absolute;
+  inset: 62% 0 0;
+  border-radius: 0 0 20px 20px;
+  background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--surface) 52%, transparent) 48%, var(--surface) 100%);
+  content: '';
+  pointer-events: none;
+}
 .public-profile-large .public-profile-photo img {
   width: 100%;
   height: 100%;
@@ -980,16 +976,14 @@ body, body *:not(.bi) { font-family: 'DM Sans', Arial, sans-serif !important; }
 }
 .public-profile-large .public-showcase { margin-top: 20px; text-align: left; }
 .public-theme-dark .public-profile-large {
-  border-color: #11151b;
-  background: #202630;
-  box-shadow: 0 24px 70px rgba(0,0,0,.32), inset 0 0 0 1px rgba(255,255,255,.08);
+  border-color: var(--surface-border);
+  background: var(--surface);
 }
-.public-theme-dark .public-profile-large::before { background: #0c0f13; }
 .public-theme-dark .public-profile-large .public-profile-body { background: linear-gradient(180deg, #252d38 0%, #202630 62%); }
 .public-theme-dark .public-profile-large .public-profile-photo { background: linear-gradient(145deg, #303a47, #252d38); }
 .public-theme-liquid-glass .public-profile-large {
-  border-color: rgba(31,41,55,.78);
-  background: rgba(255,255,255,.68);
+  border-color: var(--surface-border);
+  background: var(--surface);
 }
 .public-theme-liquid-glass .public-profile-large .public-profile-body {
   background: linear-gradient(180deg, rgba(240,245,251,.9), rgba(255,255,255,.65));
@@ -1002,9 +996,9 @@ body, body *:not(.bi) { font-family: 'DM Sans', Arial, sans-serif !important; }
   min-height: 330px;
   margin-inline: auto;
   overflow: hidden;
-  border: 5px solid #202630;
-  border-radius: 28px;
-  box-shadow: 0 14px 32px rgba(15,23,42,.2);
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(15,23,42,.08);
 }
 .editor-card-preview.editor-profile-large .editor-preview-cover { display: none; }
 .editor-card-preview.editor-profile-large .editor-preview-cover.editor-preview-has-cover {
@@ -1065,7 +1059,7 @@ body, body *:not(.bi) { font-family: 'DM Sans', Arial, sans-serif !important; }
 .editor-card-preview.editor-profile-large .editor-preview-actions {
   margin-top: 8px;
 }
-.editor-card-preview.editor-theme-dark.editor-profile-large { border-color: #11151b; }
+.editor-card-preview.editor-theme-dark.editor-profile-large { border-color: #404b5a; }
 .editor-card-preview.editor-theme-dark.editor-profile-large .editor-preview-content {
   background: linear-gradient(180deg, #252d38, #202630 65%);
 }
