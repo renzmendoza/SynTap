@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { BrowserRouter, Link, NavLink, Navigate, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import QRCode from 'qrcode'
 import { isSupabaseConfigured, requireSupabase, setRememberSession, supabase } from './lib/supabase'
 import syntapLogo from './assets/syntap.png'
 import './App.css'
@@ -83,13 +82,13 @@ function Brand({ compact = false }) {
   )
 }
 
-function MediaImage({ path, alt, className, onLoad, onError, onClick }) {
+function MediaImage({ path, alt, className, onLoad, onError, onClick, signedUrl }) {
   const [image, setImage] = useState({ path: '', url: '' })
   const onErrorRef = useRef(onError)
   useEffect(() => { onErrorRef.current = onError }, [onError])
   useEffect(() => {
     let active = true
-    if (!path?.trim()) return undefined
+    if (!path?.trim() || signedUrl !== undefined) return undefined
     if (safeWebUrl(path)) return undefined
     requireSupabase().storage.from('card-media').createSignedUrl(path, 3600).then(({ data, error }) => {
       if (error) {
@@ -100,12 +99,12 @@ function MediaImage({ path, alt, className, onLoad, onError, onClick }) {
       if (active) setImage({ path, url: data.signedUrl })
     })
     return () => { active = false }
-  }, [path])
-  const url = safeWebUrl(path) || (image.path === path ? image.url : '')
+  }, [path, signedUrl])
+  const url = safeWebUrl(path) || (signedUrl !== undefined ? signedUrl : image.path === path ? image.url : '')
   return url ? <img className={className} src={url} alt={alt} onLoad={onLoad} onError={onError} onClick={onClick} /> : null
 }
 
-function PublicCover({ path, alt, onLoad, onError }) {
+function PublicCover({ path, alt, onLoad, onError, signedUrl }) {
   const [loaded, setLoaded] = useState(false)
   const handleLoad = () => {
     setLoaded(true)
@@ -117,14 +116,15 @@ function PublicCover({ path, alt, onLoad, onError }) {
   }
   if (!path?.trim()) return null
   return <div className={`public-cover${loaded ? ' public-cover-loaded' : ' public-cover-loading'}`} aria-hidden="true">
-    <MediaImage path={path} alt={alt} onLoad={handleLoad} onError={handleError} />
+    <MediaImage path={path} alt={alt} onLoad={handleLoad} onError={handleError} signedUrl={signedUrl} />
   </div>
 }
 
-function PublicProfilePhoto({ path, name }) {
+function PublicProfilePhoto({ path, name, signedUrl }) {
   const [failed, setFailed] = useState(false)
+  const imageUrl = safeWebUrl(path) || signedUrl
   return <div className="public-profile-photo">
-    {path && !failed ? <MediaImage path={path} alt={`${name} profile`} onError={() => setFailed(true)} /> : <span>{name.trim().slice(0, 1).toUpperCase() || '?'}</span>}
+    {path && imageUrl && !failed ? <MediaImage path={path} alt={`${name} profile`} onError={() => setFailed(true)} signedUrl={signedUrl} /> : <span>{name.trim().slice(0, 1).toUpperCase() || '?'}</span>}
   </div>
 }
 
@@ -1261,6 +1261,7 @@ function socialBrand(platform) {
 function PublicCardPage() {
   const { slug } = useParams()
   const [card, setCard] = useState(null)
+  const [mediaUrls, setMediaUrls] = useState({})
   const [loadedCoverPath, setLoadedCoverPath] = useState('')
   const [showcaseIndex, setShowcaseIndex] = useState(null)
   const [loading, setLoading] = useState(Boolean(supabase))
@@ -1281,12 +1282,24 @@ function PublicCardPage() {
       if (requestInProgress || !active) return
       requestInProgress = true
       try {
-        const { data, error: fetchError } = await requireSupabase()
+        const client = requireSupabase()
+        const cardQuery = () => client
           .from('digital_cards')
-          .select('*')
+          .select('full_name, job_title, company, bio, profile_image, company_logo, cover_image, phone, email, whatsapp, website, address, map_url, booking_url, theme_settings, section_settings, social_links, showcase_images')
           .eq('slug', slug)
           .eq('status', 'published')
           .maybeSingle()
+        let { data, error: fetchError } = await cardQuery()
+        if (fetchError && /showcase_images/i.test(fetchError.message) && ['PGRST204', '42703'].includes(fetchError.code)) {
+          const fallback = await client
+            .from('digital_cards')
+            .select('full_name, job_title, company, bio, profile_image, company_logo, cover_image, phone, email, whatsapp, website, address, map_url, booking_url, theme_settings, section_settings, social_links')
+            .eq('slug', slug)
+            .eq('status', 'published')
+            .maybeSingle()
+          data = fallback.data
+          fetchError = fallback.error
+        }
         if (!active) return
         if (fetchError) {
           if (hasLoadedCard) setNotice(`Could not refresh the latest profile: ${fetchError.message}`)
@@ -1301,13 +1314,43 @@ function PublicCardPage() {
         }
         hasLoadedCard = true
         setCard(data)
+        setMediaUrls({})
         setError('')
+        const mediaPaths = [...new Set([
+          data.profile_image,
+          data.company_logo,
+          data.cover_image,
+          ...(Array.isArray(data.showcase_images) ? data.showcase_images : []),
+        ].filter((path) => typeof path === 'string' && path.trim() && !safeWebUrl(path)))]
+        if (mediaPaths.length) {
+          requireSupabase().storage.from('card-media').createSignedUrls(mediaPaths, 3600).then(({ data: signedUrls, error: signedUrlError }) => {
+            if (!active) return
+            if (signedUrlError) {
+              console.error('Could not load profile images:', signedUrlError.message)
+              return
+            }
+            const resolvedUrls = {}
+            signedUrls.forEach(({ path, signedUrl, error: pathError }) => {
+              if (pathError) {
+                console.error(`Could not load profile image "${path}":`, pathError)
+              } else if (path && signedUrl) {
+                resolvedUrls[path] = signedUrl
+              }
+            })
+            setMediaUrls(resolvedUrls)
+          }).catch((signedUrlError) => {
+            if (active) console.error('Could not load profile images:', signedUrlError.message)
+          })
+        }
         if (!initialViewRecorded) {
           initialViewRecorded = true
           const ref = new URLSearchParams(window.location.search).get('via')
           const attribution = ['qr', 'nfc'].includes(ref) ? ref : 'direct'
-          const { error: viewError } = await requireSupabase().rpc('record_profile_view', { profile_slug: slug, attribution })
-          if (viewError) console.error('Profile view was not recorded:', viewError.message)
+          requireSupabase().rpc('record_profile_view', { profile_slug: slug, attribution }).then(({ error: viewError }) => {
+            if (viewError) console.error('Profile view was not recorded:', viewError.message)
+          }).catch((viewError) => {
+            console.error('Profile view was not recorded:', viewError.message)
+          })
         }
       } catch (fetchError) {
         if (!active) return
@@ -1399,18 +1442,18 @@ function PublicCardPage() {
   const hasCover = Boolean(card.cover_image?.trim() && loadedCoverPath === card.cover_image)
   return <div className={`public-card-page public-theme-${themeName}${themeName === 'dark' ? ' public-dark' : ''}`} style={style}>
     <div className={`public-card-wrap${largeProfile ? ' public-card-wrap-large' : ''}`}><article className={`public-profile public-button-${buttonStyle} public-button-shape-${buttonShape}${theme.button_layout === 'two-column' ? ' public-layout-two-column' : ''}${largeProfile ? ' public-profile-large' : ''}${hasCover ? ' has-cover' : ' no-cover'}${theme.alignment === 'left' ? ' align-left' : ''}`}>
-      {card.cover_image?.trim() && <PublicCover key={card.cover_image} path={card.cover_image} alt={`${card.full_name} cover`} onLoad={() => setLoadedCoverPath(card.cover_image)} onError={() => setLoadedCoverPath('')} />}
+      {card.cover_image?.trim() && <PublicCover key={card.cover_image} path={card.cover_image} alt={`${card.full_name} cover`} signedUrl={mediaUrls[card.cover_image] || ''} onLoad={() => setLoadedCoverPath(card.cover_image)} onError={() => setLoadedCoverPath('')} />}
       <div className="public-profile-body">{largeProfile ? <>
-        <div className="public-profile-hero"><PublicProfilePhoto path={card.profile_image} name={card.full_name} /></div>
+        <div className="public-profile-hero"><PublicProfilePhoto path={card.profile_image} name={card.full_name} signedUrl={mediaUrls[card.profile_image] || ''} /></div>
         <div className="public-profile-identity"><h1>{card.full_name}</h1>{(card.job_title || card.company) && <div className="public-identity-meta">
           {card.job_title && <div className="public-identity-detail"><p className="public-job">{card.job_title}</p></div>}
           {card.company && <div className="public-identity-detail"><p className="public-company">{card.company}</p></div>}
         </div>}</div>
       </> : <>
-        <PublicProfilePhoto path={card.profile_image} name={card.full_name} />
+        <PublicProfilePhoto path={card.profile_image} name={card.full_name} signedUrl={mediaUrls[card.profile_image] || ''} />
         <h1>{card.full_name}</h1>{(card.job_title || card.company) && <div className="public-identity-meta">{card.job_title && <p className="public-job">{card.job_title}</p>}{card.company && <p className="public-company">{card.company}</p>}</div>}
       </>}
-        {card.company_logo && <MediaImage className="company-logo" path={card.company_logo} alt={card.company || 'Company logo'} />}
+        {card.company_logo && <MediaImage className="company-logo" path={card.company_logo} alt={card.company || 'Company logo'} signedUrl={mediaUrls[card.company_logo] || ''} />}
         {!largeProfile && sections.about && card.bio && <p className="public-bio">{card.bio}</p>}
         <div className={`public-actions${theme.button_layout === 'two-column' ? ' public-actions-two-column' : ''}`}>
           <button className="public-action public-primary-action" onClick={() => makeVcard(card)}><span className="public-action-icon"><Icon name="personPlus" size={18} /></span><span className="public-action-copy"><strong>Save contact</strong><small>Add {card.full_name} to your contacts</small></span><Icon name="arrow" size={16} /></button>
@@ -1427,11 +1470,11 @@ function PublicCardPage() {
           const socialColor = themeName === 'dark' ? (brand.darkColor || brand.color) : brand.color
           return <a key={`${social.platform}-${index}`} className="public-action public-social-action" style={{ '--social-color': socialColor }} href={safeWebUrl(social.url)} target="_blank" rel="noopener noreferrer"><span className="public-action-icon public-social-icon"><Icon name={brand.icon} size={19} /></span><span className="public-action-copy"><strong>{social.label || social.platform}</strong><small>Open {social.platform} link</small></span><Icon name="arrow" size={16} /></a>
         })}</section>}
-        {sections.showcase && showcaseImages.length > 0 && <section className="public-showcase" aria-label="Showcase gallery"><h2 className="public-actions-title">Showcase</h2><div className="public-showcase-grid">{showcaseImages.map((path, index) => <button type="button" className="public-showcase-photo" key={`${path}-${index}`} onClick={() => setShowcaseIndex(index)} aria-label={`View showcase photo ${index + 1}`}><MediaImage path={path} alt={`${card.full_name} showcase ${index + 1}`} /></button>)}</div></section>}
+        {sections.showcase && showcaseImages.length > 0 && <section className="public-showcase" aria-label="Showcase gallery"><h2 className="public-actions-title">Showcase</h2><div className="public-showcase-grid">{showcaseImages.map((path, index) => <button type="button" className="public-showcase-photo" key={`${path}-${index}`} onClick={() => setShowcaseIndex(index)} aria-label={`View showcase photo ${index + 1}`}><MediaImage path={path} alt={`${card.full_name} showcase ${index + 1}`} signedUrl={mediaUrls[path] || ''} /></button>)}</div></section>}
         <button className="public-action public-share-action" onClick={share}><span className="public-action-icon"><Icon name="share" size={16} /></span><span className="public-action-copy"><strong>Share profile</strong><small>Send this profile to someone</small></span><Icon name="arrow" size={14} /></button>
       </div>
     </article></div>
-    {showcaseIndex !== null && showcaseImages[showcaseIndex] && <div className="showcase-lightbox" role="dialog" aria-modal="true" aria-label={`Showcase photo ${showcaseIndex + 1} of ${showcaseImages.length}`} onClick={() => setShowcaseIndex(null)}><button type="button" className="showcase-lightbox-close" onClick={() => setShowcaseIndex(null)} aria-label="Close photo viewer"><Icon name="close" size={22} /></button>{showcaseImages.length > 1 && <button type="button" className="showcase-lightbox-nav previous" aria-label="Previous photo" onClick={(event) => { event.stopPropagation(); setShowcaseIndex((showcaseIndex + showcaseImages.length - 1) % showcaseImages.length) }}><Icon name="leftArrow" size={22} /></button>}<MediaImage className="showcase-lightbox-image" path={showcaseImages[showcaseIndex]} alt={`${card.full_name} showcase ${showcaseIndex + 1}`} onClick={(event) => event.stopPropagation()} />{showcaseImages.length > 1 && <button type="button" className="showcase-lightbox-nav next" aria-label="Next photo" onClick={(event) => { event.stopPropagation(); setShowcaseIndex((showcaseIndex + 1) % showcaseImages.length) }}><Icon name="arrow" size={22} /></button>}</div>}
+    {showcaseIndex !== null && showcaseImages[showcaseIndex] && <div className="showcase-lightbox" role="dialog" aria-modal="true" aria-label={`Showcase photo ${showcaseIndex + 1} of ${showcaseImages.length}`} onClick={() => setShowcaseIndex(null)}><button type="button" className="showcase-lightbox-close" onClick={() => setShowcaseIndex(null)} aria-label="Close photo viewer"><Icon name="close" size={22} /></button>{showcaseImages.length > 1 && <button type="button" className="showcase-lightbox-nav previous" aria-label="Previous photo" onClick={(event) => { event.stopPropagation(); setShowcaseIndex((showcaseIndex + showcaseImages.length - 1) % showcaseImages.length) }}><Icon name="leftArrow" size={22} /></button>}<MediaImage className="showcase-lightbox-image" path={showcaseImages[showcaseIndex]} alt={`${card.full_name} showcase ${showcaseIndex + 1}`} signedUrl={mediaUrls[showcaseImages[showcaseIndex]] || ''} onClick={(event) => event.stopPropagation()} />{showcaseImages.length > 1 && <button type="button" className="showcase-lightbox-nav next" aria-label="Next photo" onClick={(event) => { event.stopPropagation(); setShowcaseIndex((showcaseIndex + 1) % showcaseImages.length) }}><Icon name="arrow" size={22} /></button>}</div>}
     <Toast message={notice} onClose={() => setNotice('')} />
   </div>
 }
@@ -1452,19 +1495,21 @@ function QrCodesPage() {
     if (!selected) return
     let active = true
     const url = `${window.location.origin}/card/${selected.slug}?via=qr`
-    Promise.all([
-      QRCode.toDataURL(url, { width: 420, margin: 2, color: { dark: '#171717', light: '#ffffff' }, errorCorrectionLevel: 'H' }),
-      QRCode.toString(url, { type: 'svg', width: 420, margin: 2, errorCorrectionLevel: 'H' }),
-      requireSupabase().from('nfc_tags').select('*').eq('card_id', selected.id).order('created_at', { ascending: false }),
-    ])
-      .then(([pngUrl, svg, tagsResult]) => {
-        if (!active) return
-        if (tagsResult.error) setNfcError(tagsResult.error.message)
-        else setNfcTags(tagsResult.data || [])
-        setQrUrl(pngUrl)
-        setQrSvg(svg)
-        setQrError('')
-      })
+    async function generateCodes() {
+      const { default: QRCode } = await import('qrcode')
+      const [pngUrl, svg, tagsResult] = await Promise.all([
+        QRCode.toDataURL(url, { width: 420, margin: 2, color: { dark: '#171717', light: '#ffffff' }, errorCorrectionLevel: 'H' }),
+        QRCode.toString(url, { type: 'svg', width: 420, margin: 2, errorCorrectionLevel: 'H' }),
+        requireSupabase().from('nfc_tags').select('*').eq('card_id', selected.id).order('created_at', { ascending: false }),
+      ])
+      if (!active) return
+      if (tagsResult.error) setNfcError(tagsResult.error.message)
+      else setNfcTags(tagsResult.data || [])
+      setQrUrl(pngUrl)
+      setQrSvg(svg)
+      setQrError('')
+    }
+    generateCodes()
       .catch((error) => { if (active) setQrError(error.message) })
     return () => { active = false }
   }, [selected])
