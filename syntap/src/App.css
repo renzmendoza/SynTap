@@ -765,8 +765,12 @@ body, body *:not(.bi) { font-family: 'DM Sans', Arial, sans-serif !important; }
 .showcase-replace input,
 .showcase-add input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 .showcase-add { position: relative; overflow: hidden; }
+.public-profile .public-actions.public-actions-two-column,
 .public-profile.public-layout-two-column .public-actions,
 .public-profile.public-layout-two-column .public-social-list.public-social-two-column { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.public-profile .public-actions.public-actions-two-column > .public-actions-title,
+.public-profile .public-actions.public-actions-two-column > .public-actions-hint,
+.public-profile .public-actions.public-actions-two-column > .public-primary-action,
 .public-profile.public-layout-two-column .public-actions-title,
 .public-profile.public-layout-two-column .public-actions-hint,
 .public-profile.public-layout-two-column .public-primary-action,

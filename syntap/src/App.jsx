@@ -1343,7 +1343,7 @@ function PublicCardPage() {
   if (loading) return <div className="full-loader"><span className="spinner" />Loading profile…</div>
   if (error || !card) return <div className="not-found"><span className="section-kicker">PROFILE NOT AVAILABLE</span><h1>This card isn't here.</h1><p>{!supabase ? 'This profile service is not connected yet.' : error || 'This digital card could not be found.'}</p></div>
   const sections = { ...DEFAULT_SECTIONS, ...card.section_settings }
-  const theme = card.theme_settings || {}
+  const theme = normalizedCardThemeSettings(card.theme_settings || {})
   const website = safeWebUrl(card.website)
   const mapUrl = isGoogleMapsUrl(card.map_url)
     ? safeWebUrl(card.map_url)
@@ -1371,7 +1371,7 @@ function PublicCardPage() {
         {card.company_logo && <MediaImage className="company-logo" path={card.company_logo} alt={card.company || 'Company logo'} />}
         <h1>{card.full_name}</h1>{(card.job_title || card.company) && <div className="public-identity-meta">{card.job_title && <p className="public-job">{card.job_title}</p>}{card.company && <p className="public-company">{card.company}</p>}</div>}
         {sections.about && card.bio && <p className="public-bio">{card.bio}</p>}
-        <div className="public-actions">
+        <div className={`public-actions${theme.button_layout === 'two-column' ? ' public-actions-two-column' : ''}`}>
           <h2 className="public-actions-title">Quick actions</h2>
           <p className="public-actions-hint">Choose how you’d like to connect.</p>
           <button className="public-action public-primary-action" onClick={() => makeVcard(card)}><span className="public-action-icon"><Icon name="download" size={18} /></span><span className="public-action-copy"><strong>Save contact</strong><small>Add {card.full_name} to your contacts</small></span><Icon name="arrow" size={16} /></button>
