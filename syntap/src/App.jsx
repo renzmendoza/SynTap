@@ -1091,7 +1091,7 @@ function CardEditorPage({ editing = false }) {
           <label>Theme<select value={editorTheme} onChange={(event) => updateTheme('theme', event.target.value)}><option value="light">Light</option><option value="dark">Dark</option><option value="liquid-glass">Liquid Glass</option></select></label>
           <label>Profile layout<select value={card.theme_settings.profile_layout === 'large-profile' ? 'large-profile' : 'standard'} onChange={(event) => updateTheme('profile_layout', event.target.value)}><option value="standard">Standard</option><option value="large-profile">Large Profile</option></select></label>
           <label className="accent-color-control">Accent color<input type="color" value={card.theme_settings.primary} onChange={(event) => updateTheme('primary', event.target.value)} /></label>
-          <label>Button style<select value={normalizedButtonStyle(card.theme_settings.button_appearance)} onChange={(event) => updateTheme('button_appearance', event.target.value)}><option value="soft">Soft</option><option value="outline">Outline</option><option value="glass">Liquid Glass</option></select></label>
+          <label>Button style<select value={normalizedButtonStyle(card.theme_settings.button_appearance)} onChange={(event) => updateTheme('button_appearance', event.target.value)}><option value="soft">Soft</option><option value="outline">Outline</option><option value="glass">Liquid Glass</option><option value="gradient">Solid Gradient</option></select></label>
           <label>Button shape<select value={card.theme_settings.button_shape === 'pill' ? 'pill' : 'rounded'} onChange={(event) => updateTheme('button_shape', event.target.value)}><option value="rounded">Rounded</option><option value="pill">Pill</option></select></label>
           <div className="button-layout-setting"><span>Button layout</span><div className="button-layout-options" role="radiogroup" aria-label="Button layout">
             {['default', 'two-column'].map((layout) => <button key={layout} type="button" className={`button-layout-option${(card.theme_settings.button_layout || 'default') === layout ? ' selected' : ''}`} role="radio" aria-checked={(card.theme_settings.button_layout || 'default') === layout} onClick={() => updateTheme('button_layout', layout)}>
@@ -1213,6 +1213,7 @@ function normalizedTheme(theme) {
 }
 
 function normalizedButtonStyle(style) {
+  if (style === 'gradient') return 'gradient'
   if (style === 'glass') return 'glass'
   if (style === 'outline') return 'outline'
   return 'soft'
@@ -1419,7 +1420,7 @@ function PublicCardPage() {
           {sections.contact && card.whatsapp && whatsapp && <a className="public-action" href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer"><span className="public-action-icon"><Icon name="whatsapp" size={18} /></span><span className="public-action-copy"><strong>WhatsApp</strong><small>Message {card.full_name}</small></span><Icon name="arrow" size={16} /></a>}
           {sections.contact && website && <a className="public-action" href={website} target="_blank" rel="noopener noreferrer"><span className="public-action-icon"><Icon name="external" size={18} /></span><span className="public-action-copy"><strong>Visit website</strong><small>{new URL(website).hostname}</small></span><Icon name="arrow" size={16} /></a>}
           {sections.booking && booking && <a className="public-action" href={booking} target="_blank" rel="noopener noreferrer"><span className="public-action-icon"><Icon name="calendar" size={18} /></span><span className="public-action-copy"><strong>Book an appointment</strong><small>Choose a time to connect</small></span><Icon name="arrow" size={16} /></a>}
-          {sections.location && (locationLabel || mapUrl) && <a className="public-action" href={mapUrl} target="_blank" rel="noopener noreferrer"><span className="public-action-icon"><Icon name="location" size={18} /></span><span className="public-action-copy"><strong>Get directions</strong><small>{locationLabel || 'Open business location in Google Maps'}</small></span><Icon name="arrow" size={16} /></a>}
+          {sections.location && (locationLabel || mapUrl) && <a className="public-action public-directions-action" href={mapUrl} target="_blank" rel="noopener noreferrer"><span className="public-action-icon"><Icon name="location" size={18} /></span><span className="public-action-copy"><strong>Get directions</strong><small>{locationLabel || 'Open business location in Google Maps'}</small></span><Icon name="arrow" size={16} /></a>}
         </div>
         {sections.social && socials.length > 0 && <section className={`public-social-list${theme.button_layout === 'two-column' ? ' public-social-two-column' : ''}`} aria-label="Social media and links"><h2 className="public-actions-title">Connect With Me</h2><p className="public-actions-hint">Choose a platform to connect with {card.full_name}.</p>{socials.map((social, index) => {
           const brand = socialBrand(social.platform)

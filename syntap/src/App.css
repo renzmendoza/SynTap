@@ -786,10 +786,18 @@ body, body *:not(.bi) { font-family: 'DM Sans', Arial, sans-serif !important; }
 .public-profile.public-layout-two-column .public-social-list > .public-actions-hint { grid-column: 1 / -1; }
 .public-profile.public-layout-two-column .public-actions > .public-action,
 .public-profile.public-layout-two-column .public-social-list > .public-action { min-width: 0; min-height: 68px; padding: 8px; gap: 7px; border-radius: 11px; }
+.public-profile.public-layout-two-column .public-actions > .public-directions-action {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 48px;
+  margin-inline: auto;
+  padding: 6px 10px;
+}
 .public-profile.public-layout-two-column .public-actions > .public-action:not(.public-primary-action) .public-action-icon,
 .public-profile.public-layout-two-column .public-social-list > .public-action .public-action-icon { width: 34px; height: 34px; flex-basis: 34px; border-radius: 9px; }
 .public-profile.public-layout-two-column .public-actions > .public-action:not(.public-primary-action) > .app-icon,
 .public-profile.public-layout-two-column .public-social-list > .public-action > .app-icon { display: none; }
+.public-profile.public-layout-two-column .public-actions > .public-directions-action:not(.public-primary-action) > .app-icon { display: block; }
 .public-profile.public-layout-two-column .public-actions > .public-action:not(.public-primary-action) .public-action-copy small,
 .public-profile.public-layout-two-column .public-social-list > .public-action .public-action-copy small { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow-wrap: anywhere; }
 .public-profile.public-layout-two-column .public-actions > .public-primary-action { min-height: 72px; border-width: 1px; box-shadow: 0 5px 14px rgba(17,24,39,.11); }
@@ -1130,4 +1138,53 @@ body, body *:not(.bi) { font-family: 'DM Sans', Arial, sans-serif !important; }
   font-family: 'Manrope', sans-serif !important;
   font-weight: 700;
   letter-spacing: -.015em;
+}
+
+.public-profile.public-button-gradient .public-action:not(.public-social-action) {
+  background: linear-gradient(110deg,
+    color-mix(in srgb, var(--card-accent) 15%, #173f88),
+    color-mix(in srgb, var(--card-accent) 15%, #1162b4)) !important;
+  border-color: color-mix(in srgb, var(--card-accent) 20%, #1d5eaa) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--card-accent) 20%, transparent);
+}
+.public-profile.public-button-gradient .public-action:not(.public-social-action):hover {
+  filter: brightness(1.08);
+}
+.public-profile.public-button-gradient .public-action:not(.public-social-action) .public-action-icon {
+  background: rgba(255,255,255,.16) !important;
+  color: #fff !important;
+}
+.public-profile.public-button-gradient .public-action:not(.public-social-action) .public-action-copy small,
+.public-profile.public-button-gradient .public-action:not(.public-social-action) > .app-icon {
+  color: rgba(255,255,255,.92) !important;
+}
+.public-profile.public-button-gradient .public-social-action {
+  background: linear-gradient(110deg,
+    color-mix(in srgb, var(--social-color) 76%, #111827),
+    color-mix(in srgb, var(--social-color) 82%, #fff)) !important;
+  border-color: color-mix(in srgb, var(--social-color) 84%, #111827) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--social-color) 22%, transparent);
+}
+.public-profile.public-button-gradient .public-social-action:hover,
+.public-profile.public-button-gradient .public-social-action:focus-visible {
+  filter: brightness(1.08);
+}
+.public-profile.public-button-gradient .public-social-action .public-social-icon {
+  background: rgba(255,255,255,.16) !important;
+  border-color: rgba(255,255,255,.24) !important;
+  color: #fff !important;
+}
+.public-profile.public-button-gradient .public-social-action .app-icon,
+.public-profile.public-button-gradient .public-social-action .public-action-copy small,
+.public-profile.public-button-gradient .public-social-action > .app-icon {
+  color: rgba(255,255,255,.92) !important;
+}
+.editor-preview-actions.preview-style-gradient .editor-preview-button {
+  background: linear-gradient(110deg,
+    color-mix(in srgb, var(--card-accent) 15%, #173f88),
+    color-mix(in srgb, var(--card-accent) 15%, #1162b4));
+  border-color: color-mix(in srgb, var(--card-accent) 20%, #1d5eaa);
+  color: #fff;
 }
