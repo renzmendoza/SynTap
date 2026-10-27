@@ -258,6 +258,7 @@ function Icon({ name, size = 20 }) {
     menu: 'list',
     close: 'x-lg',
     phone: 'telephone',
+    sms: 'chat-text',
     share: 'share',
     download: 'download',
     email: 'envelope',
@@ -1413,6 +1414,7 @@ function PublicCardPage() {
         <div className={`public-actions${theme.button_layout === 'two-column' ? ' public-actions-two-column' : ''}`}>
           <button className="public-action public-primary-action" onClick={() => makeVcard(card)}><span className="public-action-icon"><Icon name="personPlus" size={18} /></span><span className="public-action-copy"><strong>Save contact</strong><small>Add {card.full_name} to your contacts</small></span><Icon name="arrow" size={16} /></button>
           {sections.contact && phoneNumber && <a className="public-action" href={`tel:${phoneNumber}`}><span className="public-action-icon"><Icon name="phone" size={18} /></span><span className="public-action-copy"><strong>Call</strong><small>{card.phone}</small></span><Icon name="arrow" size={16} /></a>}
+          {sections.contact && phoneNumber && <a className="public-action" href={`sms:${phoneNumber}`}><span className="public-action-icon"><Icon name="sms" size={18} /></span><span className="public-action-copy"><strong>Text / SMS</strong><small>Message {card.full_name}</small></span><Icon name="arrow" size={16} /></a>}
           {sections.contact && card.email && <a className="public-action" href={`mailto:${card.email}`}><span className="public-action-icon"><Icon name="email" size={18} /></span><span className="public-action-copy"><strong>Email</strong><small>{card.email}</small></span><Icon name="arrow" size={16} /></a>}
           {sections.contact && card.whatsapp && whatsapp && <a className="public-action" href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer"><span className="public-action-icon"><Icon name="whatsapp" size={18} /></span><span className="public-action-copy"><strong>WhatsApp</strong><small>Message {card.full_name}</small></span><Icon name="arrow" size={16} /></a>}
           {sections.contact && website && <a className="public-action" href={website} target="_blank" rel="noopener noreferrer"><span className="public-action-icon"><Icon name="external" size={18} /></span><span className="public-action-copy"><strong>Visit website</strong><small>{new URL(website).hostname}</small></span><Icon name="arrow" size={16} /></a>}
