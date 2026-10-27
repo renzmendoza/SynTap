@@ -834,12 +834,12 @@ body, body *:not(.bi) { font-family: 'DM Sans', Arial, sans-serif !important; }
   .public-profile.public-layout-two-column .public-social-list.public-social-two-column { column-gap: 10px; row-gap: 10px; }
   .public-profile.public-layout-two-column .public-actions > .public-action:not(.public-primary-action),
   .public-profile.public-layout-two-column .public-social-list > .public-social-action {
-    min-height: 84px;
-    padding: 10px 8px;
-    flex-direction: column;
-    justify-content: center;
+    min-height: 68px;
+    padding: 8px;
+    flex-direction: row;
+    justify-content: flex-start;
     gap: 7px;
-    text-align: center;
+    text-align: left;
     box-shadow: 0 3px 9px rgba(17,24,39,.055);
   }
   .public-profile.public-layout-two-column .public-actions > .public-action:not(.public-primary-action) .public-action-icon,
@@ -851,9 +851,9 @@ body, body *:not(.bi) { font-family: 'DM Sans', Arial, sans-serif !important; }
   }
   .public-profile.public-layout-two-column .public-actions > .public-action:not(.public-primary-action) .public-action-copy,
   .public-profile.public-layout-two-column .public-social-list > .public-social-action .public-action-copy {
-    width: 100%;
-    flex: 0 1 auto;
-    justify-items: center;
+    width: auto;
+    flex: 1;
+    justify-items: start;
     gap: 2px;
   }
   .public-profile.public-layout-two-column .public-actions > .public-action:not(.public-primary-action) .public-action-copy strong,
@@ -873,6 +873,7 @@ body, body *:not(.bi) { font-family: 'DM Sans', Arial, sans-serif !important; }
   }
   .public-profile.public-layout-two-column .public-actions > .public-action:not(.public-primary-action) > .app-icon,
   .public-profile.public-layout-two-column .public-social-list > .public-social-action > .app-icon { display: none; }
+  .public-profile.public-layout-two-column .public-actions > .public-directions-action:not(.public-primary-action) > .app-icon { display: block; }
   .public-profile.public-layout-two-column .public-actions > .public-primary-action {
     min-height: 68px;
     padding: 9px 12px;
