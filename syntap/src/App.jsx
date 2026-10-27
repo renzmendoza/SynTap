@@ -17,6 +17,7 @@ const DEFAULT_THEME_SETTINGS = {
   button_appearance: 'soft',
   alignment: 'center',
   button_layout: 'default',
+  profile_layout: 'standard',
 }
 const EMPTY_CARD = {
   full_name: '', job_title: '', company: '', bio: '', slug: '', profile_image: '',
@@ -1086,6 +1087,7 @@ function CardEditorPage({ editing = false }) {
         <section className="panel editor-panel appearance-editor">
           <div className="editor-section-heading"><span className="editor-section-icon">06</span><div><h2>Card appearance</h2><p>Choose an accent and style; SynTap adapts contrast for each theme.</p></div></div>
           <label>Theme<select value={editorTheme} onChange={(event) => updateTheme('theme', event.target.value)}><option value="light">Light</option><option value="dark">Dark</option><option value="liquid-glass">Liquid Glass</option></select></label>
+          <label>Profile layout<select value={card.theme_settings.profile_layout === 'large-profile' ? 'large-profile' : 'standard'} onChange={(event) => updateTheme('profile_layout', event.target.value)}><option value="standard">Standard</option><option value="large-profile">Large Profile</option></select></label>
           <label className="accent-color-control">Accent color<input type="color" value={card.theme_settings.primary} onChange={(event) => updateTheme('primary', event.target.value)} /></label>
           <label>Button style<select value={normalizedButtonStyle(card.theme_settings.button_appearance)} onChange={(event) => updateTheme('button_appearance', event.target.value)}><option value="soft">Soft</option><option value="outline">Outline</option><option value="glass">Liquid Glass</option></select></label>
           <label>Button shape<select value={card.theme_settings.button_shape === 'pill' ? 'pill' : 'rounded'} onChange={(event) => updateTheme('button_shape', event.target.value)}><option value="rounded">Rounded</option><option value="pill">Pill</option></select></label>
@@ -1095,7 +1097,27 @@ function CardEditorPage({ editing = false }) {
             </button>)}
           </div></div>
         </section>
-        <section className="panel editor-panel live-preview-panel"><div className="editor-section-heading"><span className="editor-section-icon"><Icon name="external" size={14} /></span><div><h2>Live preview</h2><p>Updates as you edit this profile.</p></div></div><div className={`editor-card-preview editor-theme-${editorTheme}${card.theme_settings.alignment === 'left' ? ' editor-preview-left' : ''}`} style={{ '--card-accent': card.theme_settings.primary, '--card-accent-icon': accessibleAccent(card.theme_settings.primary, editorTheme), '--accent-foreground': readableTextColor(card.theme_settings.primary) }}><div className="editor-preview-cover">{card.cover_image && <MediaImage path={card.cover_image} alt="" />}</div><div className="editor-preview-content"><div className="editor-preview-avatar">{card.profile_image ? <MediaImage path={card.profile_image} alt="" /> : <span>{card.full_name.slice(0, 1) || '?'}</span>}</div><strong>{card.full_name || 'Your name'}</strong>{card.job_title && <small>{card.job_title}</small>}{card.company && <b>{card.company}</b>}{card.bio && <p>{card.bio}</p>}<div className={`editor-preview-actions preview-style-${normalizedButtonStyle(card.theme_settings.button_appearance)}${card.theme_settings.button_layout === 'two-column' ? ' editor-preview-two-column' : ''}${card.theme_settings.button_shape === 'pill' ? ' editor-preview-shape-pill' : ''}`}><span className="editor-preview-button preview-primary">Save contact</span><span className="editor-preview-button">Call</span><span className="editor-preview-button">Email</span><span className="editor-preview-button">Website</span></div></div></div></section>
+        <section className="panel editor-panel live-preview-panel">
+          <div className="editor-section-heading"><span className="editor-section-icon"><Icon name="external" size={14} /></span><div><h2>Live preview</h2><p>Updates as you edit this profile.</p></div></div>
+          <div className={`editor-card-preview editor-theme-${editorTheme}${card.theme_settings.alignment === 'left' ? ' editor-preview-left' : ''}${card.theme_settings.profile_layout === 'large-profile' ? ' editor-profile-large' : ''}`} style={{ '--card-accent': card.theme_settings.primary, '--card-accent-icon': accessibleAccent(card.theme_settings.primary, editorTheme), '--accent-foreground': readableTextColor(card.theme_settings.primary) }}>
+            <div className={`editor-preview-cover${card.cover_image ? ' editor-preview-has-cover' : ''}`}>{card.cover_image && <MediaImage path={card.cover_image} alt="" />}</div>
+            <div className="editor-preview-content">
+              {card.theme_settings.profile_layout === 'large-profile' ? <div className="editor-preview-hero">
+                <div className="editor-preview-avatar">{card.profile_image ? <MediaImage path={card.profile_image} alt="" /> : <span>{card.full_name.slice(0, 1) || '?'}</span>}</div>
+              </div> : <>
+                <div className="editor-preview-avatar">{card.profile_image ? <MediaImage path={card.profile_image} alt="" /> : <span>{card.full_name.slice(0, 1) || '?'}</span>}</div>
+                <strong>{card.full_name || 'Your name'}</strong>{card.job_title && <small>{card.job_title}</small>}{card.company && <b>{card.company}</b>}
+              </>}
+              {card.theme_settings.profile_layout === 'large-profile' && <div className="editor-preview-identity">
+                <strong>{card.full_name || 'Your name'}</strong>
+                {card.job_title && <span className="editor-preview-identity-row">{card.job_title}</span>}
+                {card.company && <span className="editor-preview-identity-row editor-preview-company">{card.company}</span>}
+              </div>}
+              {card.bio && card.theme_settings.profile_layout !== 'large-profile' && <p>{card.bio}</p>}
+              <div className={`editor-preview-actions preview-style-${normalizedButtonStyle(card.theme_settings.button_appearance)}${card.theme_settings.button_layout === 'two-column' ? ' editor-preview-two-column' : ''}${card.theme_settings.button_shape === 'pill' ? ' editor-preview-shape-pill' : ''}`}><span className="editor-preview-button preview-primary">Save contact</span><span className="editor-preview-button">Call</span><span className="editor-preview-button">Email</span><span className="editor-preview-button">Website</span></div>
+            </div>
+          </div>
+        </section>
         <section className="panel editor-panel"><div className="editor-section-heading"><span className="editor-section-icon">07</span><div><h2>Profile sections</h2><p>Choose which optional sections appear.</p></div></div>
           {Object.entries({ about: 'About', contact: 'Contact details', social: 'Social profiles', location: 'Business location', booking: 'Booking', showcase: 'Showcase' }).map(([key, label]) => <label className="toggle-row" key={key}><span>{label}</span><input type="checkbox" checked={Boolean(card.section_settings[key])} onChange={(event) => updateSection(key, event.target.checked)} /></label>)}
         </section>
@@ -1203,6 +1225,7 @@ function normalizedCardThemeSettings(settings = {}) {
     button_shape: settings.button_shape === 'pill' ? 'pill' : 'rounded',
     alignment: settings.alignment === 'left' ? 'left' : 'center',
     button_layout: settings.button_layout === 'two-column' ? 'two-column' : 'default',
+    profile_layout: settings.profile_layout === 'large-profile' ? 'large-profile' : 'standard',
   }
 }
 
@@ -1363,6 +1386,7 @@ function PublicCardPage() {
   const themeName = normalizedTheme(theme.theme)
   const buttonStyle = normalizedButtonStyle(theme.button_appearance)
   const buttonShape = theme.button_shape === 'pill' ? 'pill' : 'rounded'
+  const largeProfile = theme.profile_layout === 'large-profile'
   const themeAccent = accessibleAccent(theme.primary || DEFAULT_THEME_SETTINGS.primary, themeName)
   const style = {
     '--card-accent': theme.primary || DEFAULT_THEME_SETTINGS.primary,
@@ -1371,15 +1395,21 @@ function PublicCardPage() {
   }
   const hasCover = Boolean(card.cover_image?.trim() && loadedCoverPath === card.cover_image)
   return <div className={`public-card-page public-theme-${themeName}${themeName === 'dark' ? ' public-dark' : ''}`} style={style}>
-    <div className="public-card-wrap"><article className={`public-profile public-button-${buttonStyle} public-button-shape-${buttonShape}${theme.button_layout === 'two-column' ? ' public-layout-two-column' : ''}${hasCover ? ' has-cover' : ' no-cover'}${theme.alignment === 'left' ? ' align-left' : ''}`}>
+    <div className={`public-card-wrap${largeProfile ? ' public-card-wrap-large' : ''}`}><article className={`public-profile public-button-${buttonStyle} public-button-shape-${buttonShape}${theme.button_layout === 'two-column' ? ' public-layout-two-column' : ''}${largeProfile ? ' public-profile-large' : ''}${hasCover ? ' has-cover' : ' no-cover'}${theme.alignment === 'left' ? ' align-left' : ''}`}>
       {card.cover_image?.trim() && <PublicCover key={card.cover_image} path={card.cover_image} alt={`${card.full_name} cover`} onLoad={() => setLoadedCoverPath(card.cover_image)} onError={() => setLoadedCoverPath('')} />}
-      <div className="public-profile-body"><PublicProfilePhoto path={card.profile_image} name={card.full_name} />
-        {card.company_logo && <MediaImage className="company-logo" path={card.company_logo} alt={card.company || 'Company logo'} />}
+      <div className="public-profile-body">{largeProfile ? <>
+        <div className="public-profile-hero"><PublicProfilePhoto path={card.profile_image} name={card.full_name} /></div>
+        <div className="public-profile-identity"><h1>{card.full_name}</h1>{(card.job_title || card.company) && <div className="public-identity-meta">
+          {card.job_title && <div className="public-identity-detail"><p className="public-job">{card.job_title}</p></div>}
+          {card.company && <div className="public-identity-detail"><p className="public-company">{card.company}</p></div>}
+        </div>}</div>
+      </> : <>
+        <PublicProfilePhoto path={card.profile_image} name={card.full_name} />
         <h1>{card.full_name}</h1>{(card.job_title || card.company) && <div className="public-identity-meta">{card.job_title && <p className="public-job">{card.job_title}</p>}{card.company && <p className="public-company">{card.company}</p>}</div>}
-        {sections.about && card.bio && <p className="public-bio">{card.bio}</p>}
+      </>}
+        {card.company_logo && <MediaImage className="company-logo" path={card.company_logo} alt={card.company || 'Company logo'} />}
+        {!largeProfile && sections.about && card.bio && <p className="public-bio">{card.bio}</p>}
         <div className={`public-actions${theme.button_layout === 'two-column' ? ' public-actions-two-column' : ''}`}>
-          <h2 className="public-actions-title">Quick actions</h2>
-          <p className="public-actions-hint">Choose how you’d like to connect.</p>
           <button className="public-action public-primary-action" onClick={() => makeVcard(card)}><span className="public-action-icon"><Icon name="download" size={18} /></span><span className="public-action-copy"><strong>Save contact</strong><small>Add {card.full_name} to your contacts</small></span><Icon name="arrow" size={16} /></button>
           {sections.contact && phoneNumber && <a className="public-action" href={`tel:${phoneNumber}`}><span className="public-action-icon"><Icon name="phone" size={18} /></span><span className="public-action-copy"><strong>Call</strong><small>{card.phone}</small></span><Icon name="arrow" size={16} /></a>}
           {sections.contact && card.email && <a className="public-action" href={`mailto:${card.email}`}><span className="public-action-icon"><Icon name="email" size={18} /></span><span className="public-action-copy"><strong>Email</strong><small>{card.email}</small></span><Icon name="arrow" size={16} /></a>}
