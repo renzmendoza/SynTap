@@ -1105,7 +1105,7 @@ body, body *:not(.bi) { font-family: 'DM Sans', Arial, sans-serif !important; }
 }
 @media (max-width: 480px) {
   .public-card-wrap-large { width: min(100%, 400px); }
-  .public-profile-large { border-width: 6px; border-radius: 32px; }
+  .public-profile-large { border-width: 1px; border-radius: 12px; }
   .public-profile-large .public-profile-body { padding: 0 14px 20px; }
   .public-profile-large .public-profile-photo { width: 100%; height: 300px; margin-inline: auto; }
   .public-profile-large.has-cover .public-profile-photo { height: 300px; margin: 0 auto; }
