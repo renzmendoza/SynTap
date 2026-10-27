@@ -7,7 +7,7 @@ import './App.css'
 
 const AuthContext = createContext(null)
 const SOCIAL_PLATFORMS = ['Facebook', 'Instagram', 'LinkedIn', 'TikTok', 'YouTube', 'X', 'GitHub', 'WhatsApp', 'Viber', 'Telegram', 'Messenger', 'Signal', 'Discord', 'WeChat', 'LINE', 'Slack', 'Skype', 'Behance', 'Dribbble', 'Calendly', 'Other']
-const DEFAULT_SECTIONS = { about: true, contact: true, social: true, location: true, booking: true }
+const DEFAULT_SECTIONS = { about: true, contact: true, social: true, location: true, booking: true, showcase: true }
 const CURRENT_YEAR = new Date().getFullYear()
 const DEFAULT_THEME_SETTINGS = {
   theme: 'light',
@@ -16,6 +16,7 @@ const DEFAULT_THEME_SETTINGS = {
   button_shape: 'rounded',
   button_appearance: 'soft',
   alignment: 'center',
+  button_layout: 'default',
 }
 const EMPTY_CARD = {
   full_name: '', job_title: '', company: '', bio: '', slug: '', profile_image: '',
@@ -24,6 +25,7 @@ const EMPTY_CARD = {
   theme_settings: DEFAULT_THEME_SETTINGS,
   section_settings: DEFAULT_SECTIONS,
   social_links: [],
+  showcase_images: [],
 }
 
 function AuthProvider({ children }) {
@@ -80,7 +82,7 @@ function Brand({ compact = false }) {
   )
 }
 
-function MediaImage({ path, alt, className, onLoad, onError }) {
+function MediaImage({ path, alt, className, onLoad, onError, onClick }) {
   const [image, setImage] = useState({ path: '', url: '' })
   const onErrorRef = useRef(onError)
   useEffect(() => { onErrorRef.current = onError }, [onError])
@@ -99,7 +101,7 @@ function MediaImage({ path, alt, className, onLoad, onError }) {
     return () => { active = false }
   }, [path])
   const url = safeWebUrl(path) || (image.path === path ? image.url : '')
-  return url ? <img className={className} src={url} alt={alt} onLoad={onLoad} onError={onError} /> : null
+  return url ? <img className={className} src={url} alt={alt} onLoad={onLoad} onError={onError} onClick={onClick} /> : null
 }
 
 function PublicCover({ path, alt, onLoad, onError }) {
@@ -240,6 +242,7 @@ function ImageCropDialog({ file, field, onCancel, onApply }) {
 function Icon({ name, size = 20 }) {
   const icons = {
     arrow: 'arrow-right',
+    leftArrow: 'arrow-left',
     grid: 'grid',
     cards: 'person-vcard',
     plus: 'plus-lg',
@@ -694,9 +697,10 @@ function CardEditorPage({ editing = false }) {
           theme_settings: normalizedCardThemeSettings(data.theme_settings),
           section_settings: { ...DEFAULT_SECTIONS, ...data.section_settings },
           social_links: data.social_links || [],
+          showcase_images: Array.isArray(data.showcase_images) ? data.showcase_images : [],
         }
         baseUpdatedAt.current = data.updated_at
-        originalImages.current = [normalized.profile_image, normalized.company_logo, normalized.cover_image].filter(Boolean)
+        originalImages.current = [normalized.profile_image, normalized.company_logo, normalized.cover_image, ...normalized.showcase_images].filter(Boolean)
         const draftMatchesSavedVersion = draft?.baseUpdatedAt === data.updated_at
         if (draft?.version === 1 && draft.cardId === id && draft.card && draftMatchesSavedVersion) {
           const restored = {
@@ -705,6 +709,7 @@ function CardEditorPage({ editing = false }) {
             theme_settings: normalizedCardThemeSettings(draft.card.theme_settings),
             section_settings: { ...DEFAULT_SECTIONS, ...draft.card.section_settings },
             social_links: Array.isArray(draft.card.social_links) ? draft.card.social_links : [],
+            showcase_images: Array.isArray(draft.card.showcase_images) ? draft.card.showcase_images : [],
           }
           setCard(restored)
           setSlugTouched(Boolean(draft.slugTouched))
@@ -717,7 +722,7 @@ function CardEditorPage({ editing = false }) {
         savedCard.current = normalized
         setLoading(false)
       } else {
-        const initial = { ...EMPTY_CARD, theme_settings: { ...DEFAULT_THEME_SETTINGS }, section_settings: { ...DEFAULT_SECTIONS }, social_links: [] }
+        const initial = { ...EMPTY_CARD, theme_settings: { ...DEFAULT_THEME_SETTINGS }, section_settings: { ...DEFAULT_SECTIONS }, social_links: [], showcase_images: [] }
         if (draft?.version === 1 && draft.draftId === draftId && draft.card) {
           const restored = {
             ...initial,
@@ -725,6 +730,7 @@ function CardEditorPage({ editing = false }) {
             theme_settings: normalizedCardThemeSettings(draft.card.theme_settings),
             section_settings: { ...DEFAULT_SECTIONS, ...draft.card.section_settings },
             social_links: Array.isArray(draft.card.social_links) ? draft.card.social_links : [],
+            showcase_images: Array.isArray(draft.card.showcase_images) ? draft.card.showcase_images : [],
           }
           setCard(restored)
           setSlugTouched(Boolean(draft.slugTouched))
@@ -840,6 +846,42 @@ function CardEditorPage({ editing = false }) {
     setCrop({ file, field })
   }
 
+  async function uploadShowcaseImage(event, replaceIndex = null) {
+    const file = event.currentTarget.files?.[0]
+    event.currentTarget.value = ''
+    if (!file) return
+    if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
+      setError('Choose a JPEG, PNG, WebP, or GIF image.')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Showcase images must be 5 MB or smaller.')
+      return
+    }
+    if (replaceIndex === null && card.showcase_images.length >= 6) {
+      setError('A showcase can contain up to six photos.')
+      return
+    }
+    setBusy(true)
+    setError('')
+    const path = makeUploadPath(session.user.id, file)
+    try {
+      const { error: uploadError } = await requireSupabase().storage.from('card-media').upload(path, file, { upsert: false })
+      if (uploadError) throw uploadError
+      uploadedImages.current.push(path)
+      setCard((current) => {
+        const showcaseImages = [...current.showcase_images]
+        if (replaceIndex === null) showcaseImages.push(path)
+        else showcaseImages[replaceIndex] = path
+        return { ...current, showcase_images: showcaseImages }
+      })
+    } catch (uploadError) {
+      setError(`Showcase image upload failed: ${uploadError.message}`)
+    } finally {
+      setBusy(false)
+    }
+  }
+
   async function applyCroppedImage(file, field) {
     if (file.size > 5 * 1024 * 1024) {
       setError('The cropped image is larger than 5 MB. Use a smaller source image or crop a smaller area.')
@@ -924,6 +966,10 @@ function CardEditorPage({ editing = false }) {
         setError('Choose a valid public URL slug.')
         return
       }
+      if (card.map_url.trim() && !isGoogleMapsUrl(card.map_url)) {
+        setError('Enter a valid Google Maps link, such as https://maps.google.com/...')
+        return
+      }
       const { data: existingSlug, error: slugError } = await requireSupabase().from('digital_cards').select('id').eq('slug', slug).maybeSingle()
       if (slugError) {
         setError(slugError.message)
@@ -948,7 +994,7 @@ function CardEditorPage({ editing = false }) {
         setError(saveError.code === '23505' ? 'That public URL is already in use. Choose another slug.' : saveError.message)
         return
       }
-      const currentImages = [card.profile_image, card.company_logo, card.cover_image].filter(Boolean)
+      const currentImages = [card.profile_image, card.company_logo, card.cover_image, ...(card.showcase_images || [])].filter(Boolean)
       const obsoleteImages = [...new Set([...originalImages.current, ...uploadedImages.current])]
         .filter((path) => !currentImages.includes(path) && !safeWebUrl(path))
       if (obsoleteImages.length) {
@@ -971,7 +1017,11 @@ function CardEditorPage({ editing = false }) {
       if (!editing) {
         navigate(`/admin/cards/${data.id}/edit`, { replace: true })
       } else {
-        setSuccess(publish ? 'Your profile is published.' : 'Your draft has been saved.')
+        setSuccess(publish
+          ? 'Your profile is published.'
+          : payload.status === 'published'
+            ? 'Your published profile has been updated.'
+            : 'Your draft has been saved.')
       }
     } catch (saveError) {
       setError(`Could not save the profile: ${saveError.message}`)
@@ -989,7 +1039,7 @@ function CardEditorPage({ editing = false }) {
     } catch (storageError) {
       setDraftNotice(`Could not remove the local draft: ${storageError.message}`)
     }
-    const restored = savedCard.current || { ...EMPTY_CARD, theme_settings: { ...DEFAULT_THEME_SETTINGS }, section_settings: { ...DEFAULT_SECTIONS }, social_links: [] }
+    const restored = savedCard.current || { ...EMPTY_CARD, theme_settings: { ...DEFAULT_THEME_SETTINGS }, section_settings: { ...DEFAULT_SECTIONS }, social_links: [], showcase_images: [] }
     const slugWasTouched = editing
     setCard(restored)
     setSlugTouched(slugWasTouched)
@@ -1006,31 +1056,42 @@ function CardEditorPage({ editing = false }) {
     <form className="editor-grid" onSubmit={(event) => save(event, false)}>
       <fieldset className="editor-fieldset" disabled={busy}>
       <div className="editor-main">
-        <section className="panel editor-panel"><div className="editor-section-heading"><span className="editor-section-icon">01</span><div><h2>Personal information</h2><p>Introduce the person behind this profile.</p></div></div>
-          <div className="field-grid"><label className="field-full">Full name *<input value={card.full_name} onChange={(event) => update('full_name', event.target.value)} required maxLength="120" placeholder="e.g. Alex Santos" /></label><label>Professional title<input value={card.job_title} onChange={(event) => update('job_title', event.target.value)} maxLength="120" placeholder="e.g. Creative Director" /></label><label>Company or organization<input value={card.company} onChange={(event) => update('company', event.target.value)} maxLength="120" placeholder="e.g. Northstar Studio" /></label><label className="field-full">Short biography<textarea rows="4" maxLength="600" value={card.bio} onChange={(event) => update('bio', event.target.value)} placeholder="A few words about what you do and what matters to you." /></label></div>
+        <section className="panel editor-panel"><div className="editor-section-heading"><span className="editor-section-icon">01</span><div><h2>Profile and About</h2><p>Introduce the person behind this profile and add its business location.</p></div></div>
+          <div className="field-grid"><label className="field-full">Full name *<input value={card.full_name} onChange={(event) => update('full_name', event.target.value)} required maxLength="120" placeholder="e.g. Alex Santos" /></label><label>Professional title<input value={card.job_title} onChange={(event) => update('job_title', event.target.value)} maxLength="120" placeholder="e.g. Creative Director" /></label><label>Company or organization<input value={card.company} onChange={(event) => update('company', event.target.value)} maxLength="120" placeholder="e.g. Northstar Studio" /></label><label className="field-full">Short biography<textarea rows="4" maxLength="600" value={card.bio} onChange={(event) => update('bio', event.target.value)} placeholder="A few words about what you do and what matters to you." /></label><label className="field-full">Business location<input value={card.address} onChange={(event) => update('address', event.target.value)} placeholder="Street, city, country" /></label><label className="field-full">Google Maps link<input type="url" value={card.map_url} onChange={(event) => update('map_url', event.target.value)} placeholder="https://maps.google.com/..." /></label></div>
           <div className="upload-grid">{[['profile_image', 'Profile photo'], ['company_logo', 'Company logo (optional)'], ['cover_image', 'Cover photo (optional)']].map(([field, label]) => <div className="upload-field" key={field}><span>{label}</span><label className={`upload-box${card[field] ? ' has-image' : ''}`}>{card[field] ? <MediaImage path={card[field]} alt={`${label} preview`} /> : <><b><Icon name="plus" size={17} /></b><small>Upload and crop</small></>}<input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={(event) => uploadImage(event, field)} /></label>{card[field] && <div className="image-actions"><button type="button" className="text-action" disabled={busy} onClick={() => recropImage(field)}>Recrop</button><button type="button" className="text-action danger-action upload-remove" disabled={busy} onClick={() => removeImage(field)}>Remove image</button></div>}</div>)}</div>
         </section>
         <section className="panel editor-panel"><div className="editor-section-heading"><span className="editor-section-icon">02</span><div><h2>Contact information</h2><p>Only the contact actions with details will appear on the public profile.</p></div></div>
-          <div className="field-grid"><label>Phone<input type="tel" value={card.phone} onChange={(event) => update('phone', event.target.value)} placeholder="+1 555 000 0000" /></label><label>Email<input type="email" value={card.email} onChange={(event) => update('email', event.target.value)} placeholder="hello@example.com" /></label><label>WhatsApp number<input type="tel" value={card.whatsapp} onChange={(event) => update('whatsapp', event.target.value)} placeholder="Include country code" /></label><label>Website<input type="url" value={card.website} onChange={(event) => update('website', event.target.value)} placeholder="https://example.com" /></label><label className="field-full">Business address<input value={card.address} onChange={(event) => update('address', event.target.value)} placeholder="Street, city, country" /></label><label className="field-full">Google Maps URL<input type="url" value={card.map_url} onChange={(event) => update('map_url', event.target.value)} placeholder="https://maps.google.com/..." /></label><label className="field-full">Booking or appointment URL<input type="url" value={card.booking_url} onChange={(event) => update('booking_url', event.target.value)} placeholder="https://..." /></label></div>
+          <div className="field-grid"><label>Phone<input type="tel" value={card.phone} onChange={(event) => update('phone', event.target.value)} placeholder="+1 555 000 0000" /></label><label>Email<input type="email" value={card.email} onChange={(event) => update('email', event.target.value)} placeholder="hello@example.com" /></label><label>WhatsApp number<input type="tel" value={card.whatsapp} onChange={(event) => update('whatsapp', event.target.value)} placeholder="Include country code" /></label><label>Website<input type="url" value={card.website} onChange={(event) => update('website', event.target.value)} placeholder="https://example.com" /></label><label className="field-full">Booking or appointment URL<input type="url" value={card.booking_url} onChange={(event) => update('booking_url', event.target.value)} placeholder="https://..." /></label></div>
         </section>
         <section className="panel editor-panel"><div className="editor-section-heading"><span className="editor-section-icon">03</span><div><h2>Social profiles</h2><p>Enter each platform’s complete destination URL; messaging links are not guessed from usernames.</p></div><button type="button" className="button button-outline button-small" onClick={addSocial}><Icon name="plus" size={15} /> Add link</button></div>
           {card.social_links.length === 0 ? <p className="form-hint">No social links added yet.</p> : card.social_links.map((social, index) => <div className="social-row" key={`${index}-${social.platform}`}><select value={social.platform} onChange={(event) => updateSocial(index, 'platform', event.target.value)} aria-label="Social platform">{SOCIAL_PLATFORMS.map((platform) => <option key={platform}>{platform}</option>)}</select><input type="url" value={social.url} onChange={(event) => updateSocial(index, 'url', event.target.value)} placeholder="https://…" aria-label="Social profile URL" /><input value={social.label || ''} onChange={(event) => updateSocial(index, 'label', event.target.value)} placeholder="Display label (optional)" aria-label="Social display label" /><button type="button" className="remove-link" aria-label="Remove social link" onClick={() => setCard((current) => ({ ...current, social_links: current.social_links.filter((_, i) => i !== index) }))}><Icon name="close" size={14} /></button></div>)}
         </section>
-        <section className="panel editor-panel"><div className="editor-section-heading"><span className="editor-section-icon">04</span><div><h2>Public URL</h2><p>This short link is used by the profile, QR code, and NFC card.</p></div></div>
+        <section className="panel editor-panel"><div className="editor-section-heading"><span className="editor-section-icon">04</span><div><h2>Showcase</h2><p>Add up to six photos to highlight your work or business.</p></div></div>
+          <p className="form-hint">{card.showcase_images.length} of 6 photos</p>
+          {card.showcase_images.length > 0 && <div className="showcase-editor-grid">{card.showcase_images.map((path, index) => <div className="showcase-editor-item" key={`${path}-${index}`}><MediaImage path={path} alt={`Showcase photo ${index + 1}`} /><div className="showcase-editor-controls"><button type="button" className="text-action" disabled={busy || index === 0} onClick={() => setCard((current) => { const images = [...current.showcase_images]; [images[index - 1], images[index]] = [images[index], images[index - 1]]; return { ...current, showcase_images: images } })} aria-label={`Move photo ${index + 1} left`}><Icon name="leftArrow" size={14} /></button><button type="button" className="text-action" disabled={busy || index === card.showcase_images.length - 1} onClick={() => setCard((current) => { const images = [...current.showcase_images]; [images[index], images[index + 1]] = [images[index + 1], images[index]]; return { ...current, showcase_images: images } })} aria-label={`Move photo ${index + 1} right`}><Icon name="arrow" size={14} /></button><label className="text-action showcase-replace">Replace<input type="file" accept="image/jpeg,image/png,image/webp,image/gif" disabled={busy} onChange={(event) => uploadShowcaseImage(event, index)} /></label><button type="button" className="text-action danger-action" disabled={busy} onClick={() => { if (!window.confirm('Remove this showcase photo?')) return; setCard((current) => ({ ...current, showcase_images: current.showcase_images.filter((_, itemIndex) => itemIndex !== index) })) }}>Remove</button></div></div>)}</div>}
+          {card.showcase_images.length < 6 && <label className="button button-outline button-small showcase-add"><Icon name="plus" size={15} /> Add photo<input type="file" accept="image/jpeg,image/png,image/webp,image/gif" disabled={busy} onChange={(event) => uploadShowcaseImage(event)} /></label>}
+          <p className="form-hint">JPEG, PNG, WebP, or GIF; maximum 5 MB per photo. Reordering is saved with the card.</p>
+        </section>
+        <section className="panel editor-panel"><div className="editor-section-heading"><span className="editor-section-icon">05</span><div><h2>Public URL</h2><p>This short link is used by the profile, QR code, and NFC card.</p></div></div>
           <label>Profile URL slug<div className="slug-input"><span>/card/</span><input value={card.slug} onChange={(event) => { setSlugTouched(true); update('slug', fieldSlug(event.target.value)) }} placeholder="alex-santos" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required /></div></label><button type="button" className="button button-outline button-small slug-suggest" onClick={useShortSlug}><Icon name="link" size={15} /> Use short link</button><div className="public-url-preview"><span>PUBLIC URL PREVIEW</span><strong>{publicUrl}</strong></div><p className="form-hint slug-warning">Changing a published profile’s slug changes its URL. Previously shared links and printed QR codes using the old URL will no longer open this profile.</p>
         </section>
       </div>
       <aside className="editor-side">
         <section className="panel editor-panel appearance-editor">
-          <div className="editor-section-heading"><span className="editor-section-icon">05</span><div><h2>Card appearance</h2><p>Choose an accent and style; SynTap adapts contrast for each theme.</p></div></div>
+          <div className="editor-section-heading"><span className="editor-section-icon">06</span><div><h2>Card appearance</h2><p>Choose an accent and style; SynTap adapts contrast for each theme.</p></div></div>
           <label>Theme<select value={editorTheme} onChange={(event) => updateTheme('theme', event.target.value)}><option value="light">Light</option><option value="dark">Dark</option><option value="liquid-glass">Liquid Glass</option></select></label>
           <label className="accent-color-control">Accent color<input type="color" value={card.theme_settings.primary} onChange={(event) => updateTheme('primary', event.target.value)} /></label>
           <label>Button style<select value={normalizedButtonStyle(card.theme_settings.button_appearance)} onChange={(event) => updateTheme('button_appearance', event.target.value)}><option value="soft">Soft</option><option value="outline">Outline</option><option value="glass">Liquid Glass</option></select></label>
           <label>Button shape<select value={card.theme_settings.button_shape === 'pill' ? 'pill' : 'rounded'} onChange={(event) => updateTheme('button_shape', event.target.value)}><option value="rounded">Rounded</option><option value="pill">Pill</option></select></label>
+          <div className="button-layout-setting"><span>Button layout</span><div className="button-layout-options" role="radiogroup" aria-label="Button layout">
+            {['default', 'two-column'].map((layout) => <button key={layout} type="button" className={`button-layout-option${(card.theme_settings.button_layout || 'default') === layout ? ' selected' : ''}`} role="radio" aria-checked={(card.theme_settings.button_layout || 'default') === layout} onClick={() => updateTheme('button_layout', layout)}>
+              <span className={`button-layout-preview preview-layout-${layout}`}><i /><i /><i /></span><strong>{layout === 'default' ? 'Default' : 'Two-Column'}</strong>
+            </button>)}
+          </div></div>
         </section>
-        <section className="panel editor-panel live-preview-panel"><div className="editor-section-heading"><span className="editor-section-icon"><Icon name="external" size={14} /></span><div><h2>Live preview</h2><p>Updates as you edit this profile.</p></div></div><div className={`editor-card-preview editor-theme-${editorTheme}${card.theme_settings.alignment === 'left' ? ' editor-preview-left' : ''}`} style={{ '--card-accent': card.theme_settings.primary, '--card-accent-icon': accessibleAccent(card.theme_settings.primary, editorTheme), '--accent-foreground': readableTextColor(card.theme_settings.primary) }}><div className="editor-preview-cover">{card.cover_image && <MediaImage path={card.cover_image} alt="" />}</div><div className="editor-preview-content"><div className="editor-preview-avatar">{card.profile_image ? <MediaImage path={card.profile_image} alt="" /> : <span>{card.full_name.slice(0, 1) || '?'}</span>}</div><strong>{card.full_name || 'Your name'}</strong>{card.job_title && <small>{card.job_title}</small>}{card.company && <b>{card.company}</b>}{card.bio && <p>{card.bio}</p>}<span className={`editor-preview-button preview-${normalizedButtonStyle(card.theme_settings.button_appearance)}`}>Contact</span><span className="editor-preview-social"><Icon name="instagram" size={14} /> <Icon name="linkedin" size={14} /> <Icon name="link" size={14} /></span></div></div></section>
-        <section className="panel editor-panel"><div className="editor-section-heading"><span className="editor-section-icon">06</span><div><h2>Profile sections</h2><p>Choose which optional sections appear.</p></div></div>
-          {Object.entries({ about: 'About', contact: 'Contact details', social: 'Social profiles', location: 'Business location', booking: 'Booking' }).map(([key, label]) => <label className="toggle-row" key={key}><span>{label}</span><input type="checkbox" checked={Boolean(card.section_settings[key])} onChange={(event) => updateSection(key, event.target.checked)} /></label>)}
+        <section className="panel editor-panel live-preview-panel"><div className="editor-section-heading"><span className="editor-section-icon"><Icon name="external" size={14} /></span><div><h2>Live preview</h2><p>Updates as you edit this profile.</p></div></div><div className={`editor-card-preview editor-theme-${editorTheme}${card.theme_settings.alignment === 'left' ? ' editor-preview-left' : ''}`} style={{ '--card-accent': card.theme_settings.primary, '--card-accent-icon': accessibleAccent(card.theme_settings.primary, editorTheme), '--accent-foreground': readableTextColor(card.theme_settings.primary) }}><div className="editor-preview-cover">{card.cover_image && <MediaImage path={card.cover_image} alt="" />}</div><div className="editor-preview-content"><div className="editor-preview-avatar">{card.profile_image ? <MediaImage path={card.profile_image} alt="" /> : <span>{card.full_name.slice(0, 1) || '?'}</span>}</div><strong>{card.full_name || 'Your name'}</strong>{card.job_title && <small>{card.job_title}</small>}{card.company && <b>{card.company}</b>}{card.bio && <p>{card.bio}</p>}<div className={`editor-preview-actions preview-style-${normalizedButtonStyle(card.theme_settings.button_appearance)}${card.theme_settings.button_layout === 'two-column' ? ' editor-preview-two-column' : ''}${card.theme_settings.button_shape === 'pill' ? ' editor-preview-shape-pill' : ''}`}><span className="editor-preview-button preview-primary">Save contact</span><span className="editor-preview-button">Call</span><span className="editor-preview-button">Email</span><span className="editor-preview-button">Website</span></div></div></div></section>
+        <section className="panel editor-panel"><div className="editor-section-heading"><span className="editor-section-icon">07</span><div><h2>Profile sections</h2><p>Choose which optional sections appear.</p></div></div>
+          {Object.entries({ about: 'About', contact: 'Contact details', social: 'Social profiles', location: 'Business location', booking: 'Booking', showcase: 'Showcase' }).map(([key, label]) => <label className="toggle-row" key={key}><span>{label}</span><input type="checkbox" checked={Boolean(card.section_settings[key])} onChange={(event) => updateSection(key, event.target.checked)} /></label>)}
         </section>
         <section className="publish-card"><span className="publish-dot" /><strong>{card.status === 'published' ? 'Published profile' : 'Saved as draft'}</strong><p>{card.status === 'published' ? 'Your card is publicly available at its unique URL.' : 'Only published cards can be viewed by visitors.'}</p><button type="button" className="button button-yellow full-button" disabled={busy || !card.full_name} onClick={(event) => save(event, true)}>{busy ? 'Saving…' : card.status === 'published' ? 'Save and publish' : 'Publish profile'} <Icon name="arrow" size={16} /></button><button type="submit" className="button button-outline full-button" disabled={busy}>{busy ? 'Saving…' : 'Save draft'}</button><button type="button" className="text-action danger-action discard-draft" disabled={busy} onClick={discardDraft}>Discard unsaved changes</button><small className="draft-storage-note">Text and uploaded image references are saved in this browser session. If an image upload has not completed, select it again after a reload.</small></section>
       </aside>
@@ -1068,6 +1129,22 @@ function safeWebUrl(value) {
     const url = new URL(value)
     return ['https:', 'http:'].includes(url.protocol) ? url.href : null
   } catch { return null }
+}
+
+function isGoogleMapsUrl(value) {
+  try {
+    const url = new URL(value)
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return false
+    const hostname = url.hostname.toLowerCase()
+    if (hostname === 'maps.app.goo.gl') return true
+    if (hostname === 'goo.gl') return /^\/maps(?:\/|$)/.test(url.pathname)
+    if (/^maps\.google\.[a-z]{2,3}(\.[a-z]{2})?$/.test(hostname)) return true
+    const googleHost = hostname.replace(/^www\./, '')
+    return (googleHost === 'google.com' || /^google\.[a-z]{2,3}(\.[a-z]{2})?$/.test(googleHost))
+      && /^\/maps(?:\/|$)/.test(url.pathname)
+  } catch {
+    return false
+  }
 }
 
 function relativeLuminance(color) {
@@ -1119,6 +1196,7 @@ function normalizedCardThemeSettings(settings = {}) {
     button_appearance: normalizedButtonStyle(settings.button_appearance),
     button_shape: settings.button_shape === 'pill' ? 'pill' : 'rounded',
     alignment: settings.alignment === 'left' ? 'left' : 'center',
+    button_layout: settings.button_layout === 'two-column' ? 'two-column' : 'default',
   }
 }
 
@@ -1152,6 +1230,7 @@ function PublicCardPage() {
   const { slug } = useParams()
   const [card, setCard] = useState(null)
   const [loadedCoverPath, setLoadedCoverPath] = useState('')
+  const [showcaseIndex, setShowcaseIndex] = useState(null)
   const [loading, setLoading] = useState(Boolean(supabase))
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
@@ -1162,24 +1241,90 @@ function PublicCardPage() {
   useEffect(() => {
     let active = true
     if (!supabase) return () => { active = false }
-    requireSupabase().from('digital_cards').select('*').eq('slug', slug).eq('status', 'published').maybeSingle().then(async ({ data, error: fetchError }) => {
-      if (!active) return
-      if (fetchError) setError(fetchError.message)
-      else if (!data) setError('This digital card could not be found.')
-      else {
+    let requestInProgress = false
+    let initialViewRecorded = false
+    let hasLoadedCard = false
+
+    async function refreshCard() {
+      if (requestInProgress || !active) return
+      requestInProgress = true
+      try {
+        const { data, error: fetchError } = await requireSupabase()
+          .from('digital_cards')
+          .select('*')
+          .eq('slug', slug)
+          .eq('status', 'published')
+          .maybeSingle()
+        if (!active) return
+        if (fetchError) {
+          if (hasLoadedCard) setNotice(`Could not refresh the latest profile: ${fetchError.message}`)
+          else setError(fetchError.message)
+          return
+        }
+        if (!data) {
+          hasLoadedCard = false
+          setCard(null)
+          setError('This digital card could not be found.')
+          return
+        }
+        hasLoadedCard = true
         setCard(data)
-        const ref = new URLSearchParams(window.location.search).get('via')
-        const attribution = ['qr', 'nfc'].includes(ref) ? ref : 'direct'
-        const { error: viewError } = await requireSupabase().rpc('record_profile_view', { profile_slug: slug, attribution })
-        if (viewError) console.error('Profile view was not recorded:', viewError.message)
+        setError('')
+        if (!initialViewRecorded) {
+          initialViewRecorded = true
+          const ref = new URLSearchParams(window.location.search).get('via')
+          const attribution = ['qr', 'nfc'].includes(ref) ? ref : 'direct'
+          const { error: viewError } = await requireSupabase().rpc('record_profile_view', { profile_slug: slug, attribution })
+          if (viewError) console.error('Profile view was not recorded:', viewError.message)
+        }
+      } catch (fetchError) {
+        if (!active) return
+        if (hasLoadedCard) setNotice(`Could not refresh the latest profile: ${fetchError.message}`)
+        else setError(fetchError.message)
+      } finally {
+        requestInProgress = false
+        if (active) setLoading(false)
       }
-      setLoading(false)
-    })
-    return () => { active = false }
+    }
+
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') refreshCard()
+    }
+    void refreshCard()
+    window.addEventListener('focus', refreshWhenVisible)
+    window.addEventListener('pageshow', refreshWhenVisible)
+    document.addEventListener('visibilitychange', refreshWhenVisible)
+    const channel = requireSupabase()
+      .channel(`public-card-${slug}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'digital_cards',
+        filter: `slug=eq.${slug}`,
+      }, refreshCard)
+      .subscribe()
+
+    return () => {
+      active = false
+      window.removeEventListener('focus', refreshWhenVisible)
+      window.removeEventListener('pageshow', refreshWhenVisible)
+      document.removeEventListener('visibilitychange', refreshWhenVisible)
+      requireSupabase().removeChannel(channel)
+    }
   }, [slug])
   useEffect(() => {
     if (card) document.title = `${card.full_name}${card.company ? ` · ${card.company}` : ''}`
   }, [card])
+  useEffect(() => {
+    if (showcaseIndex === null) return undefined
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setShowcaseIndex(null)
+      if (event.key === 'ArrowLeft') setShowcaseIndex((index) => (index + (card.showcase_images.length - 1)) % card.showcase_images.length)
+      if (event.key === 'ArrowRight') setShowcaseIndex((index) => (index + 1) % card.showcase_images.length)
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [showcaseIndex, card])
   async function share() {
     const url = window.location.href
     try {
@@ -1200,11 +1345,15 @@ function PublicCardPage() {
   const sections = { ...DEFAULT_SECTIONS, ...card.section_settings }
   const theme = card.theme_settings || {}
   const website = safeWebUrl(card.website)
-  const mapUrl = safeWebUrl(card.map_url)
+  const mapUrl = isGoogleMapsUrl(card.map_url)
+    ? safeWebUrl(card.map_url)
+    : card.address.trim() ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(card.address.trim())}` : null
+  const locationLabel = card.address.trim()
   const booking = safeWebUrl(card.booking_url)
   const whatsapp = card.whatsapp?.replace(/\D/g, '')
   const phoneNumber = card.phone?.replace(/[^\d+]/g, '')
   const socials = (card.social_links || []).filter((item) => safeWebUrl(item.url))
+  const showcaseImages = Array.isArray(card.showcase_images) ? card.showcase_images : []
   const themeName = normalizedTheme(theme.theme)
   const buttonStyle = normalizedButtonStyle(theme.button_appearance)
   const buttonShape = theme.button_shape === 'pill' ? 'pill' : 'rounded'
@@ -1216,7 +1365,7 @@ function PublicCardPage() {
   }
   const hasCover = Boolean(card.cover_image?.trim() && loadedCoverPath === card.cover_image)
   return <div className={`public-card-page public-theme-${themeName}${themeName === 'dark' ? ' public-dark' : ''}`} style={style}>
-    <div className="public-card-wrap"><article className={`public-profile public-button-${buttonStyle} public-button-shape-${buttonShape}${hasCover ? ' has-cover' : ' no-cover'}${theme.alignment === 'left' ? ' align-left' : ''}`}>
+    <div className="public-card-wrap"><article className={`public-profile public-button-${buttonStyle} public-button-shape-${buttonShape}${theme.button_layout === 'two-column' ? ' public-layout-two-column' : ''}${hasCover ? ' has-cover' : ' no-cover'}${theme.alignment === 'left' ? ' align-left' : ''}`}>
       {card.cover_image?.trim() && <PublicCover key={card.cover_image} path={card.cover_image} alt={`${card.full_name} cover`} onLoad={() => setLoadedCoverPath(card.cover_image)} onError={() => setLoadedCoverPath('')} />}
       <div className="public-profile-body"><PublicProfilePhoto path={card.profile_image} name={card.full_name} />
         {card.company_logo && <MediaImage className="company-logo" path={card.company_logo} alt={card.company || 'Company logo'} />}
@@ -1225,22 +1374,25 @@ function PublicCardPage() {
         <div className="public-actions">
           <h2 className="public-actions-title">Quick actions</h2>
           <p className="public-actions-hint">Choose how you’d like to connect.</p>
-          <button className="public-action" onClick={() => makeVcard(card)}><span className="public-action-icon"><Icon name="download" size={18} /></span><span className="public-action-copy"><strong>Save contact</strong><small>Add {card.full_name} to your contacts</small></span><Icon name="arrow" size={16} /></button>
+          <button className="public-action public-primary-action" onClick={() => makeVcard(card)}><span className="public-action-icon"><Icon name="download" size={18} /></span><span className="public-action-copy"><strong>Save contact</strong><small>Add {card.full_name} to your contacts</small></span><Icon name="arrow" size={16} /></button>
           {sections.contact && phoneNumber && <a className="public-action" href={`tel:${phoneNumber}`}><span className="public-action-icon"><Icon name="phone" size={18} /></span><span className="public-action-copy"><strong>Call</strong><small>{card.phone}</small></span><Icon name="arrow" size={16} /></a>}
           {sections.contact && card.email && <a className="public-action" href={`mailto:${card.email}`}><span className="public-action-icon"><Icon name="email" size={18} /></span><span className="public-action-copy"><strong>Email</strong><small>{card.email}</small></span><Icon name="arrow" size={16} /></a>}
           {sections.contact && card.whatsapp && whatsapp && <a className="public-action" href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer"><span className="public-action-icon"><Icon name="whatsapp" size={18} /></span><span className="public-action-copy"><strong>WhatsApp</strong><small>Message {card.full_name}</small></span><Icon name="arrow" size={16} /></a>}
           {sections.contact && website && <a className="public-action" href={website} target="_blank" rel="noopener noreferrer"><span className="public-action-icon"><Icon name="external" size={18} /></span><span className="public-action-copy"><strong>Visit website</strong><small>{new URL(website).hostname}</small></span><Icon name="arrow" size={16} /></a>}
           <button className="public-action" onClick={share}><span className="public-action-icon"><Icon name="share" size={18} /></span><span className="public-action-copy"><strong>Share profile</strong><small>Send this profile to someone</small></span><Icon name="arrow" size={16} /></button>
           {sections.booking && booking && <a className="public-action" href={booking} target="_blank" rel="noopener noreferrer"><span className="public-action-icon"><Icon name="calendar" size={18} /></span><span className="public-action-copy"><strong>Book an appointment</strong><small>Choose a time to connect</small></span><Icon name="arrow" size={16} /></a>}
+          {sections.location && (locationLabel || mapUrl) && <a className="public-action" href={mapUrl} target="_blank" rel="noopener noreferrer"><span className="public-action-icon"><Icon name="location" size={18} /></span><span className="public-action-copy"><strong>Get directions</strong><small>{locationLabel || 'Open business location in Google Maps'}</small></span><Icon name="arrow" size={16} /></a>}
         </div>
-        {sections.social && socials.length > 0 && <section className="public-social-list" aria-label="Social media and links"><h2 className="public-actions-title">Connect With Me</h2><p className="public-actions-hint">Choose a platform to connect with {card.full_name}.</p>{socials.map((social, index) => {
+        {sections.social && socials.length > 0 && <section className={`public-social-list${theme.button_layout === 'two-column' ? ' public-social-two-column' : ''}`} aria-label="Social media and links"><h2 className="public-actions-title">Connect With Me</h2><p className="public-actions-hint">Choose a platform to connect with {card.full_name}.</p>{socials.map((social, index) => {
           const brand = socialBrand(social.platform)
           const socialColor = themeName === 'dark' ? (brand.darkColor || brand.color) : brand.color
           return <a key={`${social.platform}-${index}`} className="public-action public-social-action" style={{ '--social-color': socialColor }} href={safeWebUrl(social.url)} target="_blank" rel="noopener noreferrer"><span className="public-action-icon public-social-icon"><Icon name={brand.icon} size={19} /></span><span className="public-action-copy"><strong>{social.label || social.platform}</strong><small>Open {social.platform} link</small></span><Icon name="arrow" size={16} /></a>
         })}</section>}
-        {sections.location && (card.address || mapUrl) && <div className="public-detail"><Icon name="location" size={16} /><span>{card.address || 'Business location'}</span>{mapUrl && <a href={mapUrl} target="_blank" rel="noopener noreferrer">Get directions <Icon name="external" size={13} /></a>}</div>}
+        {sections.showcase && showcaseImages.length > 0 && <section className="public-showcase" aria-label="Showcase gallery"><h2 className="public-actions-title">Showcase</h2><div className="public-showcase-grid">{showcaseImages.map((path, index) => <button type="button" className="public-showcase-photo" key={`${path}-${index}`} onClick={() => setShowcaseIndex(index)} aria-label={`View showcase photo ${index + 1}`}><MediaImage path={path} alt={`${card.full_name} showcase ${index + 1}`} /></button>)}</div></section>}
       </div>
-    </article></div><Toast message={notice} onClose={() => setNotice('')} />
+    </article></div>
+    {showcaseIndex !== null && showcaseImages[showcaseIndex] && <div className="showcase-lightbox" role="dialog" aria-modal="true" aria-label={`Showcase photo ${showcaseIndex + 1} of ${showcaseImages.length}`} onClick={() => setShowcaseIndex(null)}><button type="button" className="showcase-lightbox-close" onClick={() => setShowcaseIndex(null)} aria-label="Close photo viewer"><Icon name="close" size={22} /></button>{showcaseImages.length > 1 && <button type="button" className="showcase-lightbox-nav previous" aria-label="Previous photo" onClick={(event) => { event.stopPropagation(); setShowcaseIndex((showcaseIndex + showcaseImages.length - 1) % showcaseImages.length) }}><Icon name="leftArrow" size={22} /></button>}<MediaImage className="showcase-lightbox-image" path={showcaseImages[showcaseIndex]} alt={`${card.full_name} showcase ${showcaseIndex + 1}`} onClick={(event) => event.stopPropagation()} />{showcaseImages.length > 1 && <button type="button" className="showcase-lightbox-nav next" aria-label="Next photo" onClick={(event) => { event.stopPropagation(); setShowcaseIndex((showcaseIndex + 1) % showcaseImages.length) }}><Icon name="arrow" size={22} /></button>}</div>}
+    <Toast message={notice} onClose={() => setNotice('')} />
   </div>
 }
 

@@ -2,13 +2,13 @@
 
 SynTap is a React/Vite digital business card platform backed by Supabase. It includes a public marketing site, administrator sign-in, protected profile management, published profile pages, QR code downloads, NFC URL guidance, and first-party profile view analytics.
 
-Card editors support Classic, Dark, Liquid Glass, Premium, and Minimal themes, plus per-card button appearance, shape, size, colors, and layout settings. Public cover photos are optional and appear only after their image loads successfully. Unfinished editor changes are automatically kept in session storage for the current browser session; uploaded images are already stored in the private card-media bucket, while browser storage does not retain administrator credentials.
+Card editors support Light, Dark, and Liquid Glass themes, per-card button appearance and shape, Default or Two-Column button layouts, and an optional six-photo Showcase gallery. The public card keeps location actions with its other contact buttons and opens the saved Google Maps destination (or a search based on the address). Public cover photos are optional and appear only after their image loads successfully. Unfinished editor changes are automatically kept in session storage for the current browser session; uploaded images are stored in the private card-media bucket, while browser storage does not retain administrator credentials.
 
 ## Run locally
 
 1. Create a Supabase project.
 2. Copy `.env.example` to `.env.local` and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` from **Project Settings → API**. The anon/publishable key is intended for browser use; never put a service-role key in this project.
-3. Run `supabase/migrations/202610250001_initial_schema.sql` in the Supabase SQL Editor.
+3. Run the migrations in order in the Supabase SQL Editor: `supabase/migrations/202610250001_initial_schema.sql`, then `supabase/migrations/202610270001_add_showcase_images.sql`.
 4. In Supabase **Authentication → Providers**, disable public sign-ups. In **Authentication → Users**, create the first administrator with a strong password.
 5. In the SQL Editor, grant that account the administrator role:
 
