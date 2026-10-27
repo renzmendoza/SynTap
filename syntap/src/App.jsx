@@ -991,7 +991,13 @@ function CardEditorPage({ editing = false }) {
         : requireSupabase().from('digital_cards').insert(payload).select('id, updated_at').single()
       const { data, error: saveError } = await request
       if (saveError) {
-        setError(saveError.code === '23505' ? 'That public URL is already in use. Choose another slug.' : saveError.message)
+        const missingShowcaseColumn = /showcase_images/i.test(saveError.message)
+          && ['PGRST204', '42703'].includes(saveError.code)
+        setError(saveError.code === '23505'
+          ? 'That public URL is already in use. Choose another slug.'
+          : missingShowcaseColumn
+            ? 'The database is missing Showcase support. In Supabase, run supabase/migrations/202610270001_add_showcase_images.sql, then save this card again.'
+            : saveError.message)
         return
       }
       const currentImages = [card.profile_image, card.company_logo, card.cover_image, ...(card.showcase_images || [])].filter(Boolean)
