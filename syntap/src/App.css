@@ -1109,3 +1109,25 @@ body, body *:not(.bi) { font-family: 'DM Sans', Arial, sans-serif !important; }
   .public-profile-large .public-profile-photo { width: 100%; height: 300px; margin-inline: auto; }
   .public-profile-large.has-cover .public-profile-photo { height: 300px; margin: 0 auto; }
 }
+
+.public-profile h1,
+.editor-card-preview .editor-preview-content > strong,
+.editor-card-preview .editor-preview-identity > strong {
+  font-family: 'Manrope', sans-serif !important;
+  font-weight: 800;
+  letter-spacing: -.035em;
+}
+.public-profile .public-job,
+.editor-card-preview .editor-preview-content > small,
+.editor-card-preview .editor-preview-identity-row:not(.editor-preview-company) {
+  font-family: 'DM Sans', sans-serif !important;
+  font-weight: 500;
+  letter-spacing: .01em;
+}
+.public-profile .public-company,
+.editor-card-preview .editor-preview-content > b,
+.editor-card-preview .editor-preview-identity-row.editor-preview-company {
+  font-family: 'Manrope', sans-serif !important;
+  font-weight: 700;
+  letter-spacing: -.015em;
+}

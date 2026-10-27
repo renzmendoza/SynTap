@@ -246,6 +246,7 @@ function Icon({ name, size = 20 }) {
     leftArrow: 'arrow-left',
     grid: 'grid',
     cards: 'person-vcard',
+    personPlus: 'person-plus-fill',
     plus: 'plus-lg',
     qr: 'qr-code',
     chart: 'graph-up',
@@ -314,7 +315,7 @@ function HomePage() {
     ['01', 'Digital business cards', 'A polished profile that keeps every important detail in one place.', 'cards'],
     ['02', 'NFC tap-to-connect', 'Share your profile from a compatible NFC card with one simple tap.', 'nfc'],
     ['03', 'QR code sharing', 'A scannable link for print, events, and your everyday introduction.', 'qr'],
-    ['04', 'Save contact', 'Let visitors download a vCard and add your details to their contacts.', 'download'],
+    ['04', 'Save contact', 'Let visitors download a vCard and add your details to their contacts.', 'personPlus'],
     ['05', 'Social media integration', 'Bring your professional links together in one easy-to-share profile.', 'share'],
     ['06', 'Customizable profiles', 'Make your profile feel like you with thoughtful colors and layouts.', 'settings'],
     ['07', 'Mobile-friendly design', 'A clear, responsive profile built for the phone in your visitor’s hand.', 'phone'],
@@ -1410,7 +1411,7 @@ function PublicCardPage() {
         {card.company_logo && <MediaImage className="company-logo" path={card.company_logo} alt={card.company || 'Company logo'} />}
         {!largeProfile && sections.about && card.bio && <p className="public-bio">{card.bio}</p>}
         <div className={`public-actions${theme.button_layout === 'two-column' ? ' public-actions-two-column' : ''}`}>
-          <button className="public-action public-primary-action" onClick={() => makeVcard(card)}><span className="public-action-icon"><Icon name="download" size={18} /></span><span className="public-action-copy"><strong>Save contact</strong><small>Add {card.full_name} to your contacts</small></span><Icon name="arrow" size={16} /></button>
+          <button className="public-action public-primary-action" onClick={() => makeVcard(card)}><span className="public-action-icon"><Icon name="personPlus" size={18} /></span><span className="public-action-copy"><strong>Save contact</strong><small>Add {card.full_name} to your contacts</small></span><Icon name="arrow" size={16} /></button>
           {sections.contact && phoneNumber && <a className="public-action" href={`tel:${phoneNumber}`}><span className="public-action-icon"><Icon name="phone" size={18} /></span><span className="public-action-copy"><strong>Call</strong><small>{card.phone}</small></span><Icon name="arrow" size={16} /></a>}
           {sections.contact && card.email && <a className="public-action" href={`mailto:${card.email}`}><span className="public-action-icon"><Icon name="email" size={18} /></span><span className="public-action-copy"><strong>Email</strong><small>{card.email}</small></span><Icon name="arrow" size={16} /></a>}
           {sections.contact && card.whatsapp && whatsapp && <a className="public-action" href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer"><span className="public-action-icon"><Icon name="whatsapp" size={18} /></span><span className="public-action-copy"><strong>WhatsApp</strong><small>Message {card.full_name}</small></span><Icon name="arrow" size={16} /></a>}
