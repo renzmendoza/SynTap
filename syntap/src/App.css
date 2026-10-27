@@ -1143,22 +1143,29 @@ body, body *:not(.bi) { font-family: 'DM Sans', Arial, sans-serif !important; }
 
 .public-profile.public-button-gradient .public-action:not(.public-social-action) {
   background: linear-gradient(110deg,
-    color-mix(in srgb, var(--card-accent) 15%, #173f88),
-    color-mix(in srgb, var(--card-accent) 15%, #1162b4)) !important;
-  border-color: color-mix(in srgb, var(--card-accent) 20%, #1d5eaa) !important;
-  color: #fff !important;
+    color-mix(in srgb, var(--card-accent) 88%, #111827),
+    color-mix(in srgb, var(--card-accent) 78%, #fff)) !important;
+  border-color: color-mix(in srgb, var(--card-accent) 84%, #111827) !important;
+  color: var(--accent-foreground) !important;
   box-shadow: 0 4px 12px color-mix(in srgb, var(--card-accent) 20%, transparent);
+}
+.public-profile.public-button-gradient.public-layout-two-column .public-actions > .public-primary-action {
+  background: linear-gradient(110deg,
+    color-mix(in srgb, var(--card-accent) 88%, #111827),
+    color-mix(in srgb, var(--card-accent) 78%, #fff)) !important;
+  border-color: color-mix(in srgb, var(--card-accent) 84%, #111827) !important;
+  color: var(--accent-foreground) !important;
 }
 .public-profile.public-button-gradient .public-action:not(.public-social-action):hover {
   filter: brightness(1.08);
 }
 .public-profile.public-button-gradient .public-action:not(.public-social-action) .public-action-icon {
   background: rgba(255,255,255,.16) !important;
-  color: #fff !important;
+  color: var(--accent-foreground) !important;
 }
 .public-profile.public-button-gradient .public-action:not(.public-social-action) .public-action-copy small,
 .public-profile.public-button-gradient .public-action:not(.public-social-action) > .app-icon {
-  color: rgba(255,255,255,.92) !important;
+  color: color-mix(in srgb, var(--accent-foreground) 86%, transparent) !important;
 }
 .public-profile.public-button-gradient .public-social-action {
   background: linear-gradient(110deg,
@@ -1184,8 +1191,8 @@ body, body *:not(.bi) { font-family: 'DM Sans', Arial, sans-serif !important; }
 }
 .editor-preview-actions.preview-style-gradient .editor-preview-button {
   background: linear-gradient(110deg,
-    color-mix(in srgb, var(--card-accent) 15%, #173f88),
-    color-mix(in srgb, var(--card-accent) 15%, #1162b4));
-  border-color: color-mix(in srgb, var(--card-accent) 20%, #1d5eaa);
-  color: #fff;
+    color-mix(in srgb, var(--card-accent) 88%, #111827),
+    color-mix(in srgb, var(--card-accent) 78%, #fff));
+  border-color: color-mix(in srgb, var(--card-accent) 84%, #111827);
+  color: var(--accent-foreground);
 }
